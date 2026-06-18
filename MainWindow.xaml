@@ -5,6 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Keywise" Height="740" Width="1140" MinHeight="680" MinWidth="980"
+        Icon="Assets/keywise.ico"
+        ShowInTaskbar="True"
         Background="{DynamicResource AppBackground}" Closing="Window_Closing">
     <Window.Resources>
         <SolidColorBrush x:Key="AppBackground" Color="#EEF3F7"/>

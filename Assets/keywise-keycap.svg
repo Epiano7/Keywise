@@ -1,0 +1,9 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Keywise keycap icon">
+  <rect x="18" y="18" width="220" height="220" rx="54" fill="#101722"/>
+  <rect x="34" y="34" width="188" height="188" rx="40" fill="#35D0C3"/>
+  <path d="M77 74h31v48l41-48h37l-45 51 48 59h-39l-42-53v53H77V74z" fill="#FFFFFF"/>
+  <rect x="155" y="72" width="18" height="18" rx="6" fill="#101722" opacity=".82"/>
+  <rect x="181" y="92" width="18" height="18" rx="6" fill="#101722" opacity=".82"/>
+  <rect x="155" y="118" width="18" height="18" rx="6" fill="#101722" opacity=".82"/>
+  <rect x="181" y="138" width="18" height="18" rx="6" fill="#101722" opacity=".82"/>
+</svg>
