@@ -114,6 +114,7 @@ public partial class MainWindow : Window
         LeftClickText.Text = GetCounter("Mouse.Left").ToString("N0");
         RightClickText.Text = GetCounter("Mouse.Right").ToString("N0");
         KeysPerHourText.Text = (keyTotal / activeHours).ToString("N0");
+        TopKeyCountText.Text = $"{keys.Count:N0} tracked";
         TopKeysList.ItemsSource = keys.Take(8).Select(item => $"{item.Key.Replace("Key.", "")}: {item.Value:N0}");
     }
 
