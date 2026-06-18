@@ -1,4 +1,4 @@
-# Kounter
+# Keywise
 
 Privacy-first Windows desktop usage analytics prototype.
 
@@ -37,8 +37,8 @@ dotnet run
 ## Planned Install Layout
 
 ```text
-%LOCALAPPDATA%\Programs\Kounter\
-%LOCALAPPDATA%\Kounter\
+%LOCALAPPDATA%\Programs\Keywise\
+%LOCALAPPDATA%\Keywise\
 ```
 
 Startup should be disabled by default and enabled only by explicit user choice.
