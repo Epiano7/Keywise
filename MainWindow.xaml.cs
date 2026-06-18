@@ -193,6 +193,46 @@ public partial class MainWindow : Window
         StartAtLoginCheckBox.IsChecked = startupManager.IsEnabled;
     }
 
+    private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var result = await UpdateService.CheckForUpdatesAsync();
+            if (!result.IsUpdateAvailable)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Keywise is up to date.\n\nInstalled: {result.CurrentVersion}\nLatest: {result.LatestVersion ?? "unknown"}",
+                    "Keywise");
+                return;
+            }
+
+            var openRelease = System.Windows.MessageBox.Show(
+                $"A newer Keywise release is available.\n\nInstalled: {result.CurrentVersion}\nLatest: {result.LatestVersion}\n\nOpen the GitHub release page?",
+                "Keywise update available",
+                MessageBoxButton.YesNo);
+            if (openRelease == MessageBoxResult.Yes)
+            {
+                UpdateService.OpenReleasesPage(result.ReleaseUrl);
+            }
+        }
+        catch (Exception ex)
+        {
+            var openReleases = System.Windows.MessageBox.Show(
+                $"Keywise could not check GitHub for updates.\n\n{ex.Message}\n\nOpen the releases page instead?",
+                "Keywise update check failed",
+                MessageBoxButton.YesNo);
+            if (openReleases == MessageBoxResult.Yes)
+            {
+                UpdateService.OpenReleasesPage();
+            }
+        }
+    }
+
+    private void OpenReleases_Click(object sender, RoutedEventArgs e)
+    {
+        UpdateService.OpenReleasesPage();
+    }
+
     private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
         aggregator.Persist();

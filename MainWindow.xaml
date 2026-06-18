@@ -331,7 +331,7 @@
                                 <TextBlock Text="Startup" FontSize="18" FontWeight="SemiBold"/>
                                 <CheckBox x:Name="StartAtLoginCheckBox" Content="Start Keywise when I sign in" Margin="0,12,0,6"
                                           Foreground="{DynamicResource Ink}" Checked="StartAtLoginCheckBox_Changed" Unchecked="StartAtLoginCheckBox_Changed"/>
-                                <TextBlock Text="The prototype does not silently create startup entries. Installer support will add explicit opt-in shortcut creation."
+                                <TextBlock Text="Disabled by default. When enabled, Keywise creates a visible Startup folder shortcut that you can remove at any time."
                                            Foreground="{DynamicResource Muted}" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
@@ -343,6 +343,18 @@
                                 <TextBlock Text="Data: %LOCALAPPDATA%\Keywise\"/>
                                 <TextBlock Text="Startup opt-in: Startup folder shortcut"/>
                                 <TextBlock Text="Uninstall: remove app files, shortcuts, startup entry, and optionally local data"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource PanelCard}">
+                            <StackPanel>
+                                <TextBlock Text="Updates" FontSize="18" FontWeight="SemiBold"/>
+                                <TextBlock Text="Keywise checks GitHub only when you click the button. It does not upload usage data or run background telemetry."
+                                           Foreground="{DynamicResource Muted}" TextWrapping="Wrap" Margin="0,4,0,14"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="Check for updates" Click="CheckForUpdates_Click"/>
+                                    <Button Content="Open releases" Click="OpenReleases_Click"/>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
                     </StackPanel>

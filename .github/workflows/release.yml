@@ -5,6 +5,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   package-windows:
     runs-on: windows-latest
@@ -25,8 +28,26 @@ jobs:
         shell: pwsh
         run: Compress-Archive -Path artifacts/Keywise-win-x64/* -DestinationPath artifacts/Keywise-win-x64.zip -Force
 
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart("v")
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer\Keywise.iss /DAppVersion=$version
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/installer/Keywise-Setup-*.exe
+            artifacts/Keywise-win-x64.zip
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Keywise-win-x64
-          path: artifacts/Keywise-win-x64.zip
+          name: Keywise-release-assets
+          path: |
+            artifacts/installer/Keywise-Setup-*.exe
+            artifacts/Keywise-win-x64.zip
