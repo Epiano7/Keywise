@@ -108,8 +108,8 @@
 
                         <Border Background="White" BorderBrush="#D9E0EA" BorderThickness="1" CornerRadius="8" Padding="18">
                             <StackPanel>
-                                <TextBlock Text="Prototype input simulator" FontSize="17" FontWeight="SemiBold" Foreground="#142033"/>
-                                <TextBlock Text="This test area exercises the aggregate counter model without installing a global Windows input hook yet."
+                                <TextBlock Text="Input test tools" FontSize="17" FontWeight="SemiBold" Foreground="#142033"/>
+                                <TextBlock Text="Global Windows hooks are active while the app is running. These buttons also exercise the aggregate counter model."
                                            Foreground="#526070" Margin="0,4,0,12"/>
                                 <StackPanel Orientation="Horizontal">
                                     <Button Content="Add A key" Click="SimulateA_Click"/>
