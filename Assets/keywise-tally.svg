@@ -1,0 +1,9 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Keywise tally icon">
+  <rect x="18" y="18" width="220" height="220" rx="50" fill="#111827"/>
+  <rect x="47" y="54" width="162" height="148" rx="26" fill="#F7FAFC"/>
+  <rect x="70" y="82" width="36" height="36" rx="10" fill="#35D0C3"/>
+  <rect x="116" y="82" width="36" height="36" rx="10" fill="#35D0C3"/>
+  <rect x="162" y="82" width="24" height="36" rx="10" fill="#35D0C3"/>
+  <path d="M75 151h38M75 175h70" stroke="#111827" stroke-width="14" stroke-linecap="round"/>
+  <path d="M160 149l16 16 30-37" fill="none" stroke="#35D0C3" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

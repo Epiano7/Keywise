@@ -35,7 +35,7 @@ public partial class MainWindow : Window
 
         trayIcon = new Forms.NotifyIcon
         {
-            Icon = Drawing.SystemIcons.Application,
+            Icon = LoadTrayIcon(),
             Text = "Keywise",
             Visible = true,
             ContextMenuStrip = BuildTrayMenu()
@@ -48,6 +48,16 @@ public partial class MainWindow : Window
 
         StartInputMonitor();
         RefreshDashboard();
+    }
+
+    private static Drawing.Icon LoadTrayIcon()
+    {
+        if (!string.IsNullOrWhiteSpace(Environment.ProcessPath))
+        {
+            return Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath) ?? Drawing.SystemIcons.Application;
+        }
+
+        return Drawing.SystemIcons.Application;
     }
 
     private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)

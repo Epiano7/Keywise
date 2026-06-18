@@ -1,0 +1,7 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Keywise pulse icon">
+  <rect x="18" y="18" width="220" height="220" rx="50" fill="#111827"/>
+  <circle cx="78" cy="94" r="25" fill="#35D0C3"/>
+  <rect x="51" y="130" width="54" height="54" rx="16" fill="#35D0C3"/>
+  <path d="M121 151h22l12-44 24 82 14-38h23" fill="none" stroke="#FFFFFF" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M58 146h40" stroke="#111827" stroke-width="13" stroke-linecap="round" opacity=".9"/>
+</svg>

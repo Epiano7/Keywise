@@ -28,6 +28,7 @@ PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayIcon={app}\{#AppExeName}
+SetupIconFile=..\Assets\keywise.ico
 AppMutex=KeywiseAppMutex
 CloseApplications=yes
 RestartApplications=no
@@ -43,9 +44,9 @@ Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription:
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\Keywise"; Filename: "{app}\{#AppExeName}"
+Name: "{group}\Keywise"; Filename: "{app}\{#AppExeName}"; IconFilename: "{app}\{#AppExeName}"
 Name: "{group}\Uninstall Keywise"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\Keywise"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon
+Name: "{commondesktop}\Keywise"; Filename: "{app}\{#AppExeName}"; IconFilename: "{app}\{#AppExeName}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#AppExeName}"; Description: "Launch Keywise"; Flags: nowait postinstall skipifsilent
