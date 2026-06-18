@@ -6,7 +6,7 @@ public sealed class StartupManager
 {
     public string ShortcutPath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.Startup),
-        "Kounter.lnk");
+        "Keywise.lnk");
 
     public bool IsEnabled => File.Exists(ShortcutPath);
 

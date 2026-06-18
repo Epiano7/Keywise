@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Kounter" Height="720" Width="1100" MinHeight="660" MinWidth="940"
+        Title="Keywise" Height="720" Width="1100" MinHeight="660" MinWidth="940"
         Background="#EEF2F6" Closing="Window_Closing">
     <Window.Resources>
         <SolidColorBrush x:Key="Ink" Color="#132033"/>
@@ -80,7 +80,7 @@
                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <StackPanel>
-                            <TextBlock Text="Kounter" Foreground="White" FontSize="29" FontWeight="SemiBold"/>
+                            <TextBlock Text="Keywise" Foreground="White" FontSize="29" FontWeight="SemiBold"/>
                             <TextBlock Text="Private keyboard and mouse usage totals for your own PC"
                                        Foreground="#C9D4E2" FontSize="13" Margin="0,3,0,0"/>
                         </StackPanel>
@@ -106,7 +106,7 @@
                     CornerRadius="8" Padding="14,11" Margin="0,0,0,16">
                 <TextBlock Foreground="#245052" TextWrapping="Wrap">
                     <Run FontWeight="SemiBold" Text="Local-only by design. "/>
-                    <Run Text="Kounter stores aggregate counts and active time, not typed text, key sequences, windows, clipboard data, screen contents, or mouse coordinates."/>
+                    <Run Text="Keywise stores aggregate counts and active time, not typed text, key sequences, windows, clipboard data, screen contents, or mouse coordinates."/>
                 </TextBlock>
             </Border>
 
@@ -247,7 +247,7 @@
                         <Border Style="{StaticResource PanelCard}">
                             <StackPanel>
                                 <TextBlock Text="Startup" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}"/>
-                                <CheckBox x:Name="StartAtLoginCheckBox" Content="Start Kounter when I sign in" Margin="0,12,0,6"
+                                <CheckBox x:Name="StartAtLoginCheckBox" Content="Start Keywise when I sign in" Margin="0,12,0,6"
                                           Checked="StartAtLoginCheckBox_Changed" Unchecked="StartAtLoginCheckBox_Changed"/>
                                 <TextBlock Text="The prototype does not silently create startup entries. Installer support will add explicit opt-in shortcut creation."
                                            Foreground="{StaticResource Muted}" TextWrapping="Wrap"/>
@@ -257,8 +257,8 @@
                         <Border Style="{StaticResource PanelCard}">
                             <StackPanel>
                                 <TextBlock Text="Install layout plan" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}"/>
-                                <TextBlock Text="App: %LOCALAPPDATA%\Programs\Kounter\" Margin="0,12,0,0"/>
-                                <TextBlock Text="Data: %LOCALAPPDATA%\Kounter\"/>
+                                <TextBlock Text="App: %LOCALAPPDATA%\Programs\Keywise\" Margin="0,12,0,0"/>
+                                <TextBlock Text="Data: %LOCALAPPDATA%\Keywise\"/>
                                 <TextBlock Text="Startup opt-in: Startup folder shortcut"/>
                                 <TextBlock Text="Uninstall: remove app files, shortcuts, startup entry, and optionally local data"/>
                             </StackPanel>
