@@ -1,3 +1,4 @@
+using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Threading;
 using Drawing = System.Drawing;
@@ -18,6 +19,8 @@ public partial class MainWindow : Window
     {
         aggregator = new UsageAggregator(store);
         InitializeComponent();
+        ThemeManager.Apply(Resources);
+        SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
         inputMonitor = new WindowsInputMonitor(bucket =>
         {
             Dispatcher.Invoke(() =>
@@ -45,6 +48,14 @@ public partial class MainWindow : Window
 
         StartInputMonitor();
         RefreshDashboard();
+    }
+
+    private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+    {
+        if (e.Category is UserPreferenceCategory.General or UserPreferenceCategory.VisualStyle)
+        {
+            Dispatcher.Invoke(() => ThemeManager.Apply(Resources));
+        }
     }
 
     private Forms.ContextMenuStrip BuildTrayMenu()
@@ -184,6 +195,7 @@ public partial class MainWindow : Window
     private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
         aggregator.Persist();
+        SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
         inputMonitor.Dispose();
         trayIcon.Visible = false;
         trayIcon.Dispose();

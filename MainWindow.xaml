@@ -4,50 +4,68 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Keywise" Height="720" Width="1100" MinHeight="660" MinWidth="940"
-        Background="#EEF2F6" Closing="Window_Closing">
+        Title="Keywise" Height="740" Width="1140" MinHeight="680" MinWidth="980"
+        Background="{DynamicResource AppBackground}" Closing="Window_Closing">
     <Window.Resources>
-        <SolidColorBrush x:Key="Ink" Color="#132033"/>
-        <SolidColorBrush x:Key="Muted" Color="#627084"/>
-        <SolidColorBrush x:Key="Line" Color="#D8E0EA"/>
+        <SolidColorBrush x:Key="AppBackground" Color="#EEF3F7"/>
+        <SolidColorBrush x:Key="HeaderBackground" Color="#111827"/>
+        <SolidColorBrush x:Key="HeaderBorder" Color="#253247"/>
         <SolidColorBrush x:Key="Panel" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="Accent" Color="#167A7F"/>
-        <SolidColorBrush x:Key="AccentSoft" Color="#E3F4F2"/>
-        <SolidColorBrush x:Key="Caution" Color="#F7C948"/>
+        <SolidColorBrush x:Key="PanelAlt" Color="#F7FAFC"/>
+        <SolidColorBrush x:Key="Line" Color="#D6E0EA"/>
+        <SolidColorBrush x:Key="Ink" Color="#111827"/>
+        <SolidColorBrush x:Key="Muted" Color="#607084"/>
+        <SolidColorBrush x:Key="Accent" Color="#0F8B8D"/>
+        <SolidColorBrush x:Key="AccentStrong" Color="#0B6F73"/>
+        <SolidColorBrush x:Key="AccentSoft" Color="#E1F4F2"/>
+        <SolidColorBrush x:Key="AccentInk" Color="#12494B"/>
+        <SolidColorBrush x:Key="ButtonBg" Color="#FAFCFE"/>
+        <SolidColorBrush x:Key="ButtonFg" Color="#172033"/>
+        <SolidColorBrush x:Key="ButtonBorder" Color="#C7D2DE"/>
+        <SolidColorBrush x:Key="DangerSoft" Color="#FFF1F2"/>
+        <SolidColorBrush x:Key="WarningSoft" Color="#FFF8E1"/>
+        <SolidColorBrush x:Key="WarningBorder" Color="#E8BE3E"/>
+        <SolidColorBrush x:Key="WarningInk" Color="#4E3A00"/>
+        <SolidColorBrush x:Key="StatusBg" Color="#203149"/>
+        <SolidColorBrush x:Key="StatusBorder" Color="#3A516F"/>
 
         <Style TargetType="Border" x:Key="MetricCard">
-            <Setter Property="Background" Value="{StaticResource Panel}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+            <Setter Property="Background" Value="{DynamicResource Panel}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Line}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="18"/>
             <Setter Property="Margin" Value="0,0,14,14"/>
-            <Setter Property="MinHeight" Value="116"/>
+            <Setter Property="MinHeight" Value="118"/>
         </Style>
         <Style TargetType="Border" x:Key="PanelCard">
-            <Setter Property="Background" Value="{StaticResource Panel}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+            <Setter Property="Background" Value="{DynamicResource Panel}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Line}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="20"/>
             <Setter Property="Margin" Value="0,0,0,14"/>
         </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource Ink}"/>
+        </Style>
         <Style TargetType="TextBlock" x:Key="MetricLabel">
-            <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Muted}"/>
             <Setter Property="FontSize" Value="13"/>
         </Style>
         <Style TargetType="TextBlock" x:Key="MetricValue">
-            <Setter Property="Foreground" Value="{StaticResource Ink}"/>
-            <Setter Property="FontSize" Value="30"/>
+            <Setter Property="Foreground" Value="{DynamicResource Ink}"/>
+            <Setter Property="FontSize" Value="32"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Margin" Value="0,8,0,0"/>
         </Style>
         <Style TargetType="Button">
             <Setter Property="MinHeight" Value="36"/>
             <Setter Property="Padding" Value="16,7"/>
-            <Setter Property="Margin" Value="0,0,8,0"/>
-            <Setter Property="BorderBrush" Value="#C7D1DD"/>
-            <Setter Property="Background" Value="#FAFBFC"/>
+            <Setter Property="Margin" Value="0,0,8,8"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorder}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ButtonFg}"/>
+            <Setter Property="Background" Value="{DynamicResource ButtonBg}"/>
         </Style>
         <Style TargetType="TabControl">
             <Setter Property="Background" Value="Transparent"/>
@@ -57,38 +75,46 @@
             <Setter Property="Padding" Value="18,9"/>
             <Setter Property="Margin" Value="0,0,6,0"/>
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{DynamicResource Ink}"/>
         </Style>
         <Style TargetType="TextBox">
-            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
-            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Line}"/>
+            <Setter Property="Background" Value="{DynamicResource PanelAlt}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Ink}"/>
             <Setter Property="Padding" Value="10,7"/>
         </Style>
+        <DataTemplate x:Key="TopKeyTemplate">
+            <Border Background="{DynamicResource PanelAlt}" BorderBrush="{DynamicResource Line}" BorderThickness="1"
+                    CornerRadius="8" Padding="12,9" Margin="0,0,8,8">
+                <TextBlock Text="{Binding}" FontSize="14" FontWeight="SemiBold"/>
+            </Border>
+        </DataTemplate>
     </Window.Resources>
 
     <DockPanel>
-        <Border DockPanel.Dock="Top" Background="#142033" Padding="26,22">
+        <Border DockPanel.Dock="Top" Background="{DynamicResource HeaderBackground}" BorderBrush="{DynamicResource HeaderBorder}"
+                BorderThickness="0,0,0,1" Padding="28,24">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <Border Background="{StaticResource Accent}" Width="42" Height="42" CornerRadius="8" Margin="0,0,14,0">
-                            <TextBlock Text="K" Foreground="White" FontSize="24" FontWeight="Bold"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <StackPanel>
-                            <TextBlock Text="Keywise" Foreground="White" FontSize="29" FontWeight="SemiBold"/>
-                            <TextBlock Text="Private keyboard and mouse usage totals for your own PC"
-                                       Foreground="#C9D4E2" FontSize="13" Margin="0,3,0,0"/>
-                        </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Border Background="{DynamicResource Accent}" Width="48" Height="48" CornerRadius="8" Margin="0,0,16,0">
+                        <TextBlock Text="K" Foreground="White" FontSize="27" FontWeight="Bold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Keywise" Foreground="White" FontSize="30" FontWeight="SemiBold"/>
+                        <TextBlock Text="Private usage totals for your keyboard and mouse"
+                                   Foreground="#B8C5D6" FontSize="13" Margin="0,3,0,0"/>
                     </StackPanel>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="#203149" BorderBrush="#37506E" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,10,0">
+                    <Border Background="{DynamicResource StatusBg}" BorderBrush="{DynamicResource StatusBorder}" BorderThickness="1"
+                            CornerRadius="8" Padding="12,8" Margin="0,0,10,0">
                         <TextBlock x:Name="StatusText" Foreground="White" FontWeight="SemiBold"/>
                     </Border>
                     <Button x:Name="TrackingToggleButton" Click="TrackingToggleButton_Click"/>
@@ -102,9 +128,9 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" Background="{StaticResource AccentSoft}" BorderBrush="#B6DEDA" BorderThickness="1"
-                    CornerRadius="8" Padding="14,11" Margin="0,0,0,16">
-                <TextBlock Foreground="#245052" TextWrapping="Wrap">
+            <Border Grid.Row="0" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="1"
+                    CornerRadius="8" Padding="16,12" Margin="0,0,0,16">
+                <TextBlock Foreground="{DynamicResource AccentInk}" TextWrapping="Wrap">
                     <Run FontWeight="SemiBold" Text="Local-only by design. "/>
                     <Run Text="Keywise stores aggregate counts and active time, not typed text, key sequences, windows, clipboard data, screen contents, or mouse coordinates."/>
                 </TextBlock>
@@ -114,82 +140,113 @@
                 <TabItem Header="Dashboard">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel Margin="0,18,0,0">
-                            <TextBlock Text="Today and lifetime totals" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource Ink}" Margin="0,0,0,14"/>
+                            <Grid Margin="0,0,0,14">
+                                <StackPanel>
+                                    <TextBlock Text="Usage Overview" FontSize="22" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Live aggregate counters for this machine" Foreground="{DynamicResource Muted}" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Grid>
 
                             <UniformGrid Columns="4">
                                 <Border Style="{StaticResource MetricCard}">
                                     <StackPanel>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Active tracking time"/>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Active time"/>
                                         <TextBlock x:Name="ActiveTimeText" Style="{StaticResource MetricValue}" Text="0m"/>
+                                        <TextBlock Text="Total enabled time" Foreground="{DynamicResource Muted}" FontSize="12"/>
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource MetricCard}">
                                     <StackPanel>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Current session"/>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Session"/>
                                         <TextBlock x:Name="SessionText" Style="{StaticResource MetricValue}" Text="0m"/>
+                                        <TextBlock Text="Current run" Foreground="{DynamicResource Muted}" FontSize="12"/>
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource MetricCard}">
                                     <StackPanel>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Total key presses"/>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Keys"/>
                                         <TextBlock x:Name="KeyTotalText" Style="{StaticResource MetricValue}" Text="0"/>
+                                        <TextBlock Text="Total presses" Foreground="{DynamicResource Muted}" FontSize="12"/>
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource MetricCard}">
                                     <StackPanel>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Total mouse clicks"/>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Clicks"/>
                                         <TextBlock x:Name="MouseTotalText" Style="{StaticResource MetricValue}" Text="0"/>
-                                    </StackPanel>
-                                </Border>
-                            </UniformGrid>
-
-                            <UniformGrid Columns="3">
-                                <Border Style="{StaticResource MetricCard}">
-                                    <StackPanel>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Left clicks"/>
-                                        <TextBlock x:Name="LeftClickText" Style="{StaticResource MetricValue}" Text="0"/>
-                                    </StackPanel>
-                                </Border>
-                                <Border Style="{StaticResource MetricCard}">
-                                    <StackPanel>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Right clicks"/>
-                                        <TextBlock x:Name="RightClickText" Style="{StaticResource MetricValue}" Text="0"/>
-                                    </StackPanel>
-                                </Border>
-                                <Border Style="{StaticResource MetricCard}">
-                                    <StackPanel>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Keys per active hour"/>
-                                        <TextBlock x:Name="KeysPerHourText" Style="{StaticResource MetricValue}" Text="0"/>
+                                        <TextBlock Text="Mouse buttons" Foreground="{DynamicResource Muted}" FontSize="12"/>
                                     </StackPanel>
                                 </Border>
                             </UniformGrid>
 
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="2*"/>
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="1.35*"/>
+                                    <ColumnDefinition Width="1*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <Border Grid.Column="0" Style="{StaticResource PanelCard}" Margin="0,8,14,14">
+                                <Border Grid.Column="0" Style="{StaticResource PanelCard}" Margin="0,0,14,14">
                                     <StackPanel>
-                                        <TextBlock Text="Most used keys" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}"/>
-                                        <TextBlock Text="Aggregated totals only" Foreground="{StaticResource Muted}" Margin="0,3,0,12"/>
-                                        <ItemsControl x:Name="TopKeysList"/>
+                                        <TextBlock Text="Keyboard" FontSize="18" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Most-used keys and rate" Foreground="{DynamicResource Muted}" Margin="0,3,0,14"/>
+                                        <UniformGrid Columns="2">
+                                            <Border Background="{DynamicResource PanelAlt}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,10,12">
+                                                <StackPanel>
+                                                    <TextBlock Text="Keys per active hour" Style="{StaticResource MetricLabel}"/>
+                                                    <TextBlock x:Name="KeysPerHourText" FontSize="28" FontWeight="SemiBold"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Background="{DynamicResource PanelAlt}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,12">
+                                                <StackPanel>
+                                                    <TextBlock Text="Top keys" Style="{StaticResource MetricLabel}"/>
+                                                    <TextBlock Text="Aggregated only" FontSize="28" FontWeight="SemiBold"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </UniformGrid>
+                                        <ItemsControl x:Name="TopKeysList" ItemTemplate="{StaticResource TopKeyTemplate}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
                                     </StackPanel>
                                 </Border>
 
-                                <Border Grid.Column="1" Style="{StaticResource PanelCard}" Margin="0,8,0,14">
-                                    <StackPanel>
-                                        <TextBlock Text="Test inputs" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}"/>
-                                        <TextBlock Text="Useful while shaping the model." Foreground="{StaticResource Muted}" Margin="0,3,0,14"/>
-                                        <WrapPanel>
-                                            <Button Content="A key" Click="SimulateA_Click"/>
-                                            <Button Content="Enter" Click="SimulateEnter_Click"/>
-                                            <Button Content="Left click" Click="SimulateLeft_Click"/>
-                                            <Button Content="Right click" Click="SimulateRight_Click"/>
-                                        </WrapPanel>
-                                    </StackPanel>
-                                </Border>
+                                <StackPanel Grid.Column="1">
+                                    <Border Style="{StaticResource PanelCard}">
+                                        <StackPanel>
+                                            <TextBlock Text="Mouse" FontSize="18" FontWeight="SemiBold"/>
+                                            <TextBlock Text="Button totals" Foreground="{DynamicResource Muted}" Margin="0,3,0,14"/>
+                                            <UniformGrid Columns="2">
+                                                <Border Background="{DynamicResource PanelAlt}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,10,10">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Left" Style="{StaticResource MetricLabel}"/>
+                                                        <TextBlock x:Name="LeftClickText" FontSize="26" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                </Border>
+                                                <Border Background="{DynamicResource PanelAlt}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,10">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Right" Style="{StaticResource MetricLabel}"/>
+                                                        <TextBlock x:Name="RightClickText" FontSize="26" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </UniformGrid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource PanelCard}">
+                                        <StackPanel>
+                                            <TextBlock Text="Test Inputs" FontSize="18" FontWeight="SemiBold"/>
+                                            <TextBlock Text="Useful while shaping the model." Foreground="{DynamicResource Muted}" Margin="0,3,0,14"/>
+                                            <WrapPanel>
+                                                <Button Content="A key" Click="SimulateA_Click"/>
+                                                <Button Content="Enter" Click="SimulateEnter_Click"/>
+                                                <Button Content="Left click" Click="SimulateLeft_Click"/>
+                                                <Button Content="Right click" Click="SimulateRight_Click"/>
+                                            </WrapPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
                             </Grid>
                         </StackPanel>
                     </ScrollViewer>
@@ -198,8 +255,8 @@
                 <TabItem Header="Privacy">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel Margin="0,18,0,0">
-                            <Border Background="#FFF8E5" BorderBrush="{StaticResource Caution}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,14">
-                                <TextBlock TextWrapping="Wrap" Foreground="#4A3B00">
+                            <Border Background="{DynamicResource WarningSoft}" BorderBrush="{DynamicResource WarningBorder}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                                <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource WarningInk}">
                                     <Run FontWeight="SemiBold" Text="Security status: "/>
                                     <Run Text="This prototype is AI-generated and has not yet completed a formal penetration test. Do not describe it as thoroughly pentested until that review is finished and documented."/>
                                 </TextBlock>
@@ -208,8 +265,8 @@
                             <UniformGrid Columns="2">
                                 <Border Style="{StaticResource MetricCard}">
                                     <StackPanel>
-                                        <TextBlock Text="Collected" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}"/>
-                                        <TextBlock Text="Total count per key" Margin="0,12,0,0"/>
+                                        <TextBlock Text="Collected" FontSize="18" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Aggregate count per key" Margin="0,12,0,0"/>
                                         <TextBlock Text="Left, right, and middle mouse click totals"/>
                                         <TextBlock Text="Total active tracking time"/>
                                         <TextBlock Text="Coarse daily aggregate totals"/>
@@ -217,7 +274,7 @@
                                 </Border>
                                 <Border Style="{StaticResource MetricCard}">
                                     <StackPanel>
-                                        <TextBlock Text="Never collected" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}"/>
+                                        <TextBlock Text="Never Collected" FontSize="18" FontWeight="SemiBold"/>
                                         <TextBlock Text="Typed text or key sequences" Margin="0,12,0,0"/>
                                         <TextBlock Text="Per-key timestamps"/>
                                         <TextBlock Text="Window titles, app names, URLs, or clipboard data"/>
@@ -229,7 +286,7 @@
 
                             <Border Style="{StaticResource PanelCard}">
                                 <StackPanel>
-                                    <TextBlock Text="Local data path" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}"/>
+                                    <TextBlock Text="Local Data" FontSize="18" FontWeight="SemiBold"/>
                                     <TextBox x:Name="DataPathText" IsReadOnly="True" Margin="0,12,0,12"/>
                                     <StackPanel Orientation="Horizontal">
                                         <Button Content="Save now" Click="SaveNow_Click"/>
@@ -246,17 +303,17 @@
                     <StackPanel Margin="0,18,0,0">
                         <Border Style="{StaticResource PanelCard}">
                             <StackPanel>
-                                <TextBlock Text="Startup" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}"/>
+                                <TextBlock Text="Startup" FontSize="18" FontWeight="SemiBold"/>
                                 <CheckBox x:Name="StartAtLoginCheckBox" Content="Start Keywise when I sign in" Margin="0,12,0,6"
-                                          Checked="StartAtLoginCheckBox_Changed" Unchecked="StartAtLoginCheckBox_Changed"/>
+                                          Foreground="{DynamicResource Ink}" Checked="StartAtLoginCheckBox_Changed" Unchecked="StartAtLoginCheckBox_Changed"/>
                                 <TextBlock Text="The prototype does not silently create startup entries. Installer support will add explicit opt-in shortcut creation."
-                                           Foreground="{StaticResource Muted}" TextWrapping="Wrap"/>
+                                           Foreground="{DynamicResource Muted}" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
 
                         <Border Style="{StaticResource PanelCard}">
                             <StackPanel>
-                                <TextBlock Text="Install layout plan" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}"/>
+                                <TextBlock Text="Install Layout Plan" FontSize="18" FontWeight="SemiBold"/>
                                 <TextBlock Text="App: %LOCALAPPDATA%\Programs\Keywise\" Margin="0,12,0,0"/>
                                 <TextBlock Text="Data: %LOCALAPPDATA%\Keywise\"/>
                                 <TextBlock Text="Startup opt-in: Startup folder shortcut"/>

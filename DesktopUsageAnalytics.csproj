@@ -7,6 +7,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>Keywise</AssemblyName>
+    <Product>Keywise</Product>
+    <Description>Privacy-first aggregate keyboard and mouse usage analytics for Windows.</Description>
   </PropertyGroup>
 
 </Project>

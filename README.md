@@ -15,6 +15,7 @@ The app currently includes:
 - Aggregate key and mouse counter model
 - Active tracking time and session duration
 - Privacy and settings screens
+- Light/dark UI theme following Windows app settings
 - Global Windows input hooks for aggregate tracking
 - Simulator buttons for validating the counter model
 
@@ -42,3 +43,7 @@ dotnet run
 ```
 
 Startup should be disabled by default and enabled only by explicit user choice.
+
+## Release Packaging
+
+See [Release.md](Release.md). The current release path creates a portable Windows zip. A signed installer and updater should come before public distribution.
