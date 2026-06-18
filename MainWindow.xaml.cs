@@ -12,11 +12,20 @@ public partial class MainWindow : Window
     private readonly StartupManager startupManager = new();
     private readonly DispatcherTimer refreshTimer = new();
     private readonly Forms.NotifyIcon trayIcon;
+    private readonly WindowsInputMonitor inputMonitor;
 
     public MainWindow()
     {
         aggregator = new UsageAggregator(store);
         InitializeComponent();
+        inputMonitor = new WindowsInputMonitor(bucket =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                aggregator.Increment(bucket);
+                RefreshDashboard();
+            });
+        });
 
         DataPathText.Text = store.DataPath;
         StartAtLoginCheckBox.IsChecked = startupManager.IsEnabled;
@@ -34,6 +43,7 @@ public partial class MainWindow : Window
         refreshTimer.Tick += (_, _) => RefreshDashboard();
         refreshTimer.Start();
 
+        StartInputMonitor();
         RefreshDashboard();
     }
 
@@ -53,6 +63,16 @@ public partial class MainWindow : Window
             Close();
         });
         return menu;
+    }
+
+    private void StartInputMonitor()
+    {
+        if (!inputMonitor.Start())
+        {
+            System.Windows.MessageBox.Show(
+                inputMonitor.LastError ?? "Unable to install global input hooks.",
+                "Desktop Usage Analytics");
+        }
     }
 
     private void ShowDashboard()
@@ -164,6 +184,7 @@ public partial class MainWindow : Window
     private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
         aggregator.Persist();
+        inputMonitor.Dispose();
         trayIcon.Visible = false;
         trayIcon.Dispose();
     }
