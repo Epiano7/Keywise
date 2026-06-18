@@ -28,6 +28,7 @@
         <SolidColorBrush x:Key="WarningInk" Color="#4E3A00"/>
         <SolidColorBrush x:Key="StatusBg" Color="#203149"/>
         <SolidColorBrush x:Key="StatusBorder" Color="#3A516F"/>
+        <SolidColorBrush x:Key="TransparentBrush" Color="Transparent"/>
 
         <Style TargetType="Border" x:Key="MetricCard">
             <Setter Property="Background" Value="{DynamicResource Panel}"/>
@@ -72,10 +73,33 @@
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
         <Style TargetType="TabItem">
-            <Setter Property="Padding" Value="18,9"/>
-            <Setter Property="Margin" Value="0,0,6,0"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{DynamicResource Ink}"/>
+            <Setter Property="Background" Value="{DynamicResource PanelAlt}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Line}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="TabBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter x:Name="ContentSite" ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource AccentSoft}"/>
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource Accent}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource AccentInk}"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource Accent}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style TargetType="TextBox">
             <Setter Property="BorderBrush" Value="{DynamicResource Line}"/>
@@ -138,8 +162,8 @@
 
             <TabControl Grid.Row="1">
                 <TabItem Header="Dashboard">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="0,18,0,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
+                        <StackPanel Margin="0,16,0,20">
                             <Grid Margin="0,0,0,14">
                                 <StackPanel>
                                     <TextBlock Text="Usage Overview" FontSize="22" FontWeight="SemiBold"/>
@@ -151,14 +175,14 @@
                                 <Border Style="{StaticResource MetricCard}">
                                     <StackPanel>
                                         <TextBlock Style="{StaticResource MetricLabel}" Text="Active time"/>
-                                        <TextBlock x:Name="ActiveTimeText" Style="{StaticResource MetricValue}" Text="0m"/>
+                                        <TextBlock x:Name="ActiveTimeText" Style="{StaticResource MetricValue}" Text="0m" FontSize="29"/>
                                         <TextBlock Text="Total enabled time" Foreground="{DynamicResource Muted}" FontSize="12"/>
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource MetricCard}">
                                     <StackPanel>
                                         <TextBlock Style="{StaticResource MetricLabel}" Text="Session"/>
-                                        <TextBlock x:Name="SessionText" Style="{StaticResource MetricValue}" Text="0m"/>
+                                        <TextBlock x:Name="SessionText" Style="{StaticResource MetricValue}" Text="0m" FontSize="29"/>
                                         <TextBlock Text="Current run" Foreground="{DynamicResource Muted}" FontSize="12"/>
                                     </StackPanel>
                                 </Border>
@@ -198,7 +222,7 @@
                                             <Border Background="{DynamicResource PanelAlt}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,12">
                                                 <StackPanel>
                                                     <TextBlock Text="Top keys" Style="{StaticResource MetricLabel}"/>
-                                                    <TextBlock Text="Aggregated only" FontSize="28" FontWeight="SemiBold"/>
+                                                    <TextBlock x:Name="TopKeyCountText" Text="0 tracked" FontSize="28" FontWeight="SemiBold"/>
                                                 </StackPanel>
                                             </Border>
                                         </UniformGrid>
@@ -253,8 +277,8 @@
                 </TabItem>
 
                 <TabItem Header="Privacy">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="0,18,0,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
+                        <StackPanel Margin="0,16,0,20">
                             <Border Background="{DynamicResource WarningSoft}" BorderBrush="{DynamicResource WarningBorder}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,14">
                                 <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource WarningInk}">
                                     <Run FontWeight="SemiBold" Text="Security status: "/>
@@ -300,7 +324,8 @@
                 </TabItem>
 
                 <TabItem Header="Settings">
-                    <StackPanel Margin="0,18,0,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
+                    <StackPanel Margin="0,16,0,20">
                         <Border Style="{StaticResource PanelCard}">
                             <StackPanel>
                                 <TextBlock Text="Startup" FontSize="18" FontWeight="SemiBold"/>
@@ -321,6 +346,7 @@
                             </StackPanel>
                         </Border>
                     </StackPanel>
+                    </ScrollViewer>
                 </TabItem>
             </TabControl>
         </Grid>
