@@ -14,24 +14,31 @@ public sealed class UsageStore
     {
         DataDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "DesktopUsageAnalytics");
+            "Kounter");
         DataPath = Path.Combine(DataDirectory, "usage.json");
+        LegacyDataPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "DesktopUsageAnalytics",
+            "usage.json");
     }
 
     public string DataDirectory { get; }
 
     public string DataPath { get; }
 
+    private string LegacyDataPath { get; }
+
     public UsageSnapshot Load()
     {
-        if (!File.Exists(DataPath))
+        var path = File.Exists(DataPath) ? DataPath : LegacyDataPath;
+        if (!File.Exists(path))
         {
             return new UsageSnapshot();
         }
 
         try
         {
-            var json = File.ReadAllText(DataPath);
+            var json = File.ReadAllText(path);
             return JsonSerializer.Deserialize<UsageSnapshot>(json, JsonOptions) ?? new UsageSnapshot();
         }
         catch
