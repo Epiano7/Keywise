@@ -6,7 +6,7 @@ public sealed class StartupManager
 {
     public string ShortcutPath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.Startup),
-        "Desktop Usage Analytics.lnk");
+        "Kounter.lnk");
 
     public bool IsEnabled => File.Exists(ShortcutPath);
 

@@ -4,195 +4,268 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Desktop Usage Analytics" Height="680" Width="1040" MinHeight="620" MinWidth="920"
-        Background="#F5F7FA" Closing="Window_Closing">
+        Title="Kounter" Height="720" Width="1100" MinHeight="660" MinWidth="940"
+        Background="#EEF2F6" Closing="Window_Closing">
     <Window.Resources>
+        <SolidColorBrush x:Key="Ink" Color="#132033"/>
+        <SolidColorBrush x:Key="Muted" Color="#627084"/>
+        <SolidColorBrush x:Key="Line" Color="#D8E0EA"/>
+        <SolidColorBrush x:Key="Panel" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="Accent" Color="#167A7F"/>
+        <SolidColorBrush x:Key="AccentSoft" Color="#E3F4F2"/>
+        <SolidColorBrush x:Key="Caution" Color="#F7C948"/>
+
         <Style TargetType="Border" x:Key="MetricCard">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#D9E0EA"/>
+            <Setter Property="Background" Value="{StaticResource Panel}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="16"/>
-            <Setter Property="Margin" Value="0,0,12,12"/>
+            <Setter Property="Padding" Value="18"/>
+            <Setter Property="Margin" Value="0,0,14,14"/>
+            <Setter Property="MinHeight" Value="116"/>
+        </Style>
+        <Style TargetType="Border" x:Key="PanelCard">
+            <Setter Property="Background" Value="{StaticResource Panel}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="0,0,0,14"/>
         </Style>
         <Style TargetType="TextBlock" x:Key="MetricLabel">
-            <Setter Property="Foreground" Value="#526070"/>
+            <Setter Property="Foreground" Value="{StaticResource Muted}"/>
             <Setter Property="FontSize" Value="13"/>
         </Style>
         <Style TargetType="TextBlock" x:Key="MetricValue">
-            <Setter Property="Foreground" Value="#142033"/>
-            <Setter Property="FontSize" Value="28"/>
+            <Setter Property="Foreground" Value="{StaticResource Ink}"/>
+            <Setter Property="FontSize" Value="30"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Margin" Value="0,8,0,0"/>
         </Style>
         <Style TargetType="Button">
-            <Setter Property="MinHeight" Value="34"/>
-            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Padding" Value="16,7"/>
             <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="BorderBrush" Value="#C7D1DD"/>
+            <Setter Property="Background" Value="#FAFBFC"/>
+        </Style>
+        <Style TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style TargetType="TabItem">
+            <Setter Property="Padding" Value="18,9"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="Padding" Value="10,7"/>
         </Style>
     </Window.Resources>
 
     <DockPanel>
-        <Border DockPanel.Dock="Top" Background="#142033" Padding="20,16">
+        <Border DockPanel.Dock="Top" Background="#142033" Padding="26,22">
             <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
                 <StackPanel>
-                    <TextBlock Text="Desktop Usage Analytics" Foreground="White" FontSize="24" FontWeight="SemiBold"/>
-                    <TextBlock Text="Local aggregate input counters. No text, sequences, windows, clipboard, coordinates, or network telemetry."
-                               Foreground="#C9D4E2" FontSize="13" Margin="0,4,0,0"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Border Background="{StaticResource Accent}" Width="42" Height="42" CornerRadius="8" Margin="0,0,14,0">
+                            <TextBlock Text="K" Foreground="White" FontSize="24" FontWeight="Bold"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel>
+                            <TextBlock Text="Kounter" Foreground="White" FontSize="29" FontWeight="SemiBold"/>
+                            <TextBlock Text="Private keyboard and mouse usage totals for your own PC"
+                                       Foreground="#C9D4E2" FontSize="13" Margin="0,3,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <TextBlock x:Name="StatusText" Foreground="White" VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#203149" BorderBrush="#37506E" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,10,0">
+                        <TextBlock x:Name="StatusText" Foreground="White" FontWeight="SemiBold"/>
+                    </Border>
                     <Button x:Name="TrackingToggleButton" Click="TrackingToggleButton_Click"/>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <TabControl Margin="20">
-            <TabItem Header="Dashboard">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="{StaticResource AccentSoft}" BorderBrush="#B6DEDA" BorderThickness="1"
+                    CornerRadius="8" Padding="14,11" Margin="0,0,0,16">
+                <TextBlock Foreground="#245052" TextWrapping="Wrap">
+                    <Run FontWeight="SemiBold" Text="Local-only by design. "/>
+                    <Run Text="Kounter stores aggregate counts and active time, not typed text, key sequences, windows, clipboard data, screen contents, or mouse coordinates."/>
+                </TextBlock>
+            </Border>
+
+            <TabControl Grid.Row="1">
+                <TabItem Header="Dashboard">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="0,18,0,0">
+                            <TextBlock Text="Today and lifetime totals" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource Ink}" Margin="0,0,0,14"/>
+
+                            <UniformGrid Columns="4">
+                                <Border Style="{StaticResource MetricCard}">
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Active tracking time"/>
+                                        <TextBlock x:Name="ActiveTimeText" Style="{StaticResource MetricValue}" Text="0m"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource MetricCard}">
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Current session"/>
+                                        <TextBlock x:Name="SessionText" Style="{StaticResource MetricValue}" Text="0m"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource MetricCard}">
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Total key presses"/>
+                                        <TextBlock x:Name="KeyTotalText" Style="{StaticResource MetricValue}" Text="0"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource MetricCard}">
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Total mouse clicks"/>
+                                        <TextBlock x:Name="MouseTotalText" Style="{StaticResource MetricValue}" Text="0"/>
+                                    </StackPanel>
+                                </Border>
+                            </UniformGrid>
+
+                            <UniformGrid Columns="3">
+                                <Border Style="{StaticResource MetricCard}">
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Left clicks"/>
+                                        <TextBlock x:Name="LeftClickText" Style="{StaticResource MetricValue}" Text="0"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource MetricCard}">
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Right clicks"/>
+                                        <TextBlock x:Name="RightClickText" Style="{StaticResource MetricValue}" Text="0"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource MetricCard}">
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Keys per active hour"/>
+                                        <TextBlock x:Name="KeysPerHourText" Style="{StaticResource MetricValue}" Text="0"/>
+                                    </StackPanel>
+                                </Border>
+                            </UniformGrid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" Style="{StaticResource PanelCard}" Margin="0,8,14,14">
+                                    <StackPanel>
+                                        <TextBlock Text="Most used keys" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}"/>
+                                        <TextBlock Text="Aggregated totals only" Foreground="{StaticResource Muted}" Margin="0,3,0,12"/>
+                                        <ItemsControl x:Name="TopKeysList"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="1" Style="{StaticResource PanelCard}" Margin="0,8,0,14">
+                                    <StackPanel>
+                                        <TextBlock Text="Test inputs" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}"/>
+                                        <TextBlock Text="Useful while shaping the model." Foreground="{StaticResource Muted}" Margin="0,3,0,14"/>
+                                        <WrapPanel>
+                                            <Button Content="A key" Click="SimulateA_Click"/>
+                                            <Button Content="Enter" Click="SimulateEnter_Click"/>
+                                            <Button Content="Left click" Click="SimulateLeft_Click"/>
+                                            <Button Content="Right click" Click="SimulateRight_Click"/>
+                                        </WrapPanel>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <TabItem Header="Privacy">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="0,18,0,0">
+                            <Border Background="#FFF8E5" BorderBrush="{StaticResource Caution}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                                <TextBlock TextWrapping="Wrap" Foreground="#4A3B00">
+                                    <Run FontWeight="SemiBold" Text="Security status: "/>
+                                    <Run Text="This prototype is AI-generated and has not yet completed a formal penetration test. Do not describe it as thoroughly pentested until that review is finished and documented."/>
+                                </TextBlock>
+                            </Border>
+
+                            <UniformGrid Columns="2">
+                                <Border Style="{StaticResource MetricCard}">
+                                    <StackPanel>
+                                        <TextBlock Text="Collected" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}"/>
+                                        <TextBlock Text="Total count per key" Margin="0,12,0,0"/>
+                                        <TextBlock Text="Left, right, and middle mouse click totals"/>
+                                        <TextBlock Text="Total active tracking time"/>
+                                        <TextBlock Text="Coarse daily aggregate totals"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource MetricCard}">
+                                    <StackPanel>
+                                        <TextBlock Text="Never collected" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}"/>
+                                        <TextBlock Text="Typed text or key sequences" Margin="0,12,0,0"/>
+                                        <TextBlock Text="Per-key timestamps"/>
+                                        <TextBlock Text="Window titles, app names, URLs, or clipboard data"/>
+                                        <TextBlock Text="Screenshots, screen contents, or mouse coordinates"/>
+                                        <TextBlock Text="Network telemetry"/>
+                                    </StackPanel>
+                                </Border>
+                            </UniformGrid>
+
+                            <Border Style="{StaticResource PanelCard}">
+                                <StackPanel>
+                                    <TextBlock Text="Local data path" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}"/>
+                                    <TextBox x:Name="DataPathText" IsReadOnly="True" Margin="0,12,0,12"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="Save now" Click="SaveNow_Click"/>
+                                        <Button Content="Reset counts" Click="ResetCounts_Click"/>
+                                        <Button Content="Delete local data" Click="DeleteLocalData_Click"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <TabItem Header="Settings">
                     <StackPanel Margin="0,18,0,0">
-                        <UniformGrid Columns="4">
-                            <Border Style="{StaticResource MetricCard}">
-                                <StackPanel>
-                                    <TextBlock Style="{StaticResource MetricLabel}" Text="Active tracking time"/>
-                                    <TextBlock x:Name="ActiveTimeText" Style="{StaticResource MetricValue}" Text="0m"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource MetricCard}">
-                                <StackPanel>
-                                    <TextBlock Style="{StaticResource MetricLabel}" Text="Current session"/>
-                                    <TextBlock x:Name="SessionText" Style="{StaticResource MetricValue}" Text="0m"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource MetricCard}">
-                                <StackPanel>
-                                    <TextBlock Style="{StaticResource MetricLabel}" Text="Total key presses"/>
-                                    <TextBlock x:Name="KeyTotalText" Style="{StaticResource MetricValue}" Text="0"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource MetricCard}">
-                                <StackPanel>
-                                    <TextBlock Style="{StaticResource MetricLabel}" Text="Total mouse clicks"/>
-                                    <TextBlock x:Name="MouseTotalText" Style="{StaticResource MetricValue}" Text="0"/>
-                                </StackPanel>
-                            </Border>
-                        </UniformGrid>
-
-                        <UniformGrid Columns="3">
-                            <Border Style="{StaticResource MetricCard}">
-                                <StackPanel>
-                                    <TextBlock Style="{StaticResource MetricLabel}" Text="Left clicks"/>
-                                    <TextBlock x:Name="LeftClickText" Style="{StaticResource MetricValue}" Text="0"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource MetricCard}">
-                                <StackPanel>
-                                    <TextBlock Style="{StaticResource MetricLabel}" Text="Right clicks"/>
-                                    <TextBlock x:Name="RightClickText" Style="{StaticResource MetricValue}" Text="0"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource MetricCard}">
-                                <StackPanel>
-                                    <TextBlock Style="{StaticResource MetricLabel}" Text="Keys per active hour"/>
-                                    <TextBlock x:Name="KeysPerHourText" Style="{StaticResource MetricValue}" Text="0"/>
-                                </StackPanel>
-                            </Border>
-                        </UniformGrid>
-
-                        <Border Background="White" BorderBrush="#D9E0EA" BorderThickness="1" CornerRadius="8" Padding="18" Margin="0,8,0,12">
+                        <Border Style="{StaticResource PanelCard}">
                             <StackPanel>
-                                <TextBlock Text="Most used keys" FontSize="17" FontWeight="SemiBold" Foreground="#142033"/>
-                                <ItemsControl x:Name="TopKeysList" Margin="0,12,0,0"/>
+                                <TextBlock Text="Startup" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}"/>
+                                <CheckBox x:Name="StartAtLoginCheckBox" Content="Start Kounter when I sign in" Margin="0,12,0,6"
+                                          Checked="StartAtLoginCheckBox_Changed" Unchecked="StartAtLoginCheckBox_Changed"/>
+                                <TextBlock Text="The prototype does not silently create startup entries. Installer support will add explicit opt-in shortcut creation."
+                                           Foreground="{StaticResource Muted}" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
 
-                        <Border Background="White" BorderBrush="#D9E0EA" BorderThickness="1" CornerRadius="8" Padding="18">
+                        <Border Style="{StaticResource PanelCard}">
                             <StackPanel>
-                                <TextBlock Text="Input test tools" FontSize="17" FontWeight="SemiBold" Foreground="#142033"/>
-                                <TextBlock Text="Global Windows hooks are active while the app is running. These buttons also exercise the aggregate counter model."
-                                           Foreground="#526070" Margin="0,4,0,12"/>
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Content="Add A key" Click="SimulateA_Click"/>
-                                    <Button Content="Add Enter key" Click="SimulateEnter_Click"/>
-                                    <Button Content="Add left click" Click="SimulateLeft_Click"/>
-                                    <Button Content="Add right click" Click="SimulateRight_Click"/>
-                                </StackPanel>
+                                <TextBlock Text="Install layout plan" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Ink}"/>
+                                <TextBlock Text="App: %LOCALAPPDATA%\Programs\Kounter\" Margin="0,12,0,0"/>
+                                <TextBlock Text="Data: %LOCALAPPDATA%\Kounter\"/>
+                                <TextBlock Text="Startup opt-in: Startup folder shortcut"/>
+                                <TextBlock Text="Uninstall: remove app files, shortcuts, startup entry, and optionally local data"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
-                </ScrollViewer>
-            </TabItem>
-
-            <TabItem Header="Privacy">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Margin="0,18,0,0">
-                        <Border Background="#FFF8E5" BorderBrush="#D8B84F" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,14">
-                            <TextBlock TextWrapping="Wrap" Foreground="#4A3B00">
-                                <Run FontWeight="SemiBold" Text="Disclaimer: "/>
-                                <Run Text="This prototype is AI-generated and has not yet completed a formal penetration test. Do not describe it as thoroughly pentested until that review is finished and documented."/>
-                            </TextBlock>
-                        </Border>
-
-                        <UniformGrid Columns="2">
-                            <Border Style="{StaticResource MetricCard}">
-                                <StackPanel>
-                                    <TextBlock Text="Collected" FontSize="17" FontWeight="SemiBold"/>
-                                    <TextBlock Text="Total count per key" Margin="0,12,0,0"/>
-                                    <TextBlock Text="Left, right, and middle mouse click totals"/>
-                                    <TextBlock Text="Total active tracking time"/>
-                                    <TextBlock Text="Coarse daily aggregate totals"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource MetricCard}">
-                                <StackPanel>
-                                    <TextBlock Text="Never collected" FontSize="17" FontWeight="SemiBold"/>
-                                    <TextBlock Text="Typed text or key sequences" Margin="0,12,0,0"/>
-                                    <TextBlock Text="Per-key timestamps"/>
-                                    <TextBlock Text="Window titles, app names, URLs, or clipboard data"/>
-                                    <TextBlock Text="Screenshots, screen contents, or mouse coordinates"/>
-                                    <TextBlock Text="Network telemetry"/>
-                                </StackPanel>
-                            </Border>
-                        </UniformGrid>
-
-                        <Border Background="White" BorderBrush="#D9E0EA" BorderThickness="1" CornerRadius="8" Padding="18">
-                            <StackPanel>
-                                <TextBlock Text="Local data path" FontSize="17" FontWeight="SemiBold" Foreground="#142033"/>
-                                <TextBox x:Name="DataPathText" IsReadOnly="True" Margin="0,12,0,12"/>
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Content="Save now" Click="SaveNow_Click"/>
-                                    <Button Content="Reset counts" Click="ResetCounts_Click"/>
-                                    <Button Content="Delete local data" Click="DeleteLocalData_Click"/>
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-                </ScrollViewer>
-            </TabItem>
-
-            <TabItem Header="Settings">
-                <StackPanel Margin="0,18,0,0">
-                    <Border Background="White" BorderBrush="#D9E0EA" BorderThickness="1" CornerRadius="8" Padding="18" Margin="0,0,0,12">
-                        <StackPanel>
-                            <TextBlock Text="Startup" FontSize="17" FontWeight="SemiBold"/>
-                            <CheckBox x:Name="StartAtLoginCheckBox" Content="Start app when I sign in" Margin="0,12,0,6"
-                                      Checked="StartAtLoginCheckBox_Changed" Unchecked="StartAtLoginCheckBox_Changed"/>
-                            <TextBlock Text="The prototype does not silently create startup entries. Installer support will add explicit opt-in shortcut creation."
-                                       Foreground="#526070" TextWrapping="Wrap"/>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Background="White" BorderBrush="#D9E0EA" BorderThickness="1" CornerRadius="8" Padding="18">
-                        <StackPanel>
-                            <TextBlock Text="Install layout plan" FontSize="17" FontWeight="SemiBold"/>
-                            <TextBlock Text="App: %LOCALAPPDATA%\Programs\DesktopUsageAnalytics\" Margin="0,12,0,0"/>
-                            <TextBlock Text="Data: %LOCALAPPDATA%\DesktopUsageAnalytics\"/>
-                            <TextBlock Text="Startup opt-in: Startup folder shortcut"/>
-                            <TextBlock Text="Uninstall: remove app files, shortcuts, startup entry, and optionally local data"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </TabItem>
-        </TabControl>
+                </TabItem>
+            </TabControl>
+        </Grid>
     </DockPanel>
 </Window>

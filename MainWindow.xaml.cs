@@ -33,7 +33,7 @@ public partial class MainWindow : Window
         trayIcon = new Forms.NotifyIcon
         {
             Icon = Drawing.SystemIcons.Application,
-            Text = "Desktop Usage Analytics",
+            Text = "Kounter",
             Visible = true,
             ContextMenuStrip = BuildTrayMenu()
         };
@@ -71,7 +71,7 @@ public partial class MainWindow : Window
         {
             System.Windows.MessageBox.Show(
                 inputMonitor.LastError ?? "Unable to install global input hooks.",
-                "Desktop Usage Analytics");
+                "Kounter");
         }
     }
 
@@ -151,7 +151,7 @@ public partial class MainWindow : Window
     private void SaveNow_Click(object sender, RoutedEventArgs e)
     {
         aggregator.Persist();
-        System.Windows.MessageBox.Show("Aggregate counters saved locally.", "Desktop Usage Analytics");
+        System.Windows.MessageBox.Show("Aggregate counters saved locally.", "Kounter");
     }
 
     private void ResetCounts_Click(object sender, RoutedEventArgs e)

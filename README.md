@@ -1,4 +1,4 @@
-# Desktop Usage Analytics
+# Kounter
 
 Privacy-first Windows desktop usage analytics prototype.
 
@@ -15,7 +15,8 @@ The app currently includes:
 - Aggregate key and mouse counter model
 - Active tracking time and session duration
 - Privacy and settings screens
-- Simulator buttons for validating the counter model before global hooks are added
+- Global Windows input hooks for aggregate tracking
+- Simulator buttons for validating the counter model
 
 ## Privacy Model
 
@@ -36,8 +37,8 @@ dotnet run
 ## Planned Install Layout
 
 ```text
-%LOCALAPPDATA%\Programs\DesktopUsageAnalytics\
-%LOCALAPPDATA%\DesktopUsageAnalytics\
+%LOCALAPPDATA%\Programs\Kounter\
+%LOCALAPPDATA%\Kounter\
 ```
 
 Startup should be disabled by default and enabled only by explicit user choice.
