@@ -22,7 +22,9 @@ The app currently includes:
 
 ![Keywise dashboard](docs/screenshots/keywise-dashboard.png)
 
-![Keywise navigation](docs/screenshots/keywise-navigation.png)
+![Keywise inputs](docs/screenshots/keywise-inputs.png)
+
+![Keywise settings](docs/screenshots/keywise-settings.png)
 
 ## Privacy Model
 
