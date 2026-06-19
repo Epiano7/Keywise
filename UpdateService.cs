@@ -57,7 +57,10 @@ public static class UpdateService
         return new UpdateCheckResult(hasUpdate, currentVersion, latestTag, releaseUrl, installerDownloadUrl);
     }
 
-    public static async Task<string> DownloadInstallerAsync(UpdateCheckResult update, CancellationToken cancellationToken = default)
+    public static async Task<string> DownloadInstallerAsync(
+        UpdateCheckResult update,
+        IProgress<double>? progress = null,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(update.InstallerDownloadUrl))
         {
@@ -71,18 +74,50 @@ public static class UpdateService
 
         using var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Keywise-update-download");
-        await using var stream = await httpClient.GetStreamAsync(update.InstallerDownloadUrl, cancellationToken);
+        using var response = await httpClient.GetAsync(update.InstallerDownloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        response.EnsureSuccessStatusCode();
+        var totalBytes = response.Content.Headers.ContentLength;
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
         await using var file = File.Create(destinationPath);
-        await stream.CopyToAsync(file, cancellationToken);
+        var buffer = new byte[81920];
+        long downloadedBytes = 0;
+        int bytesRead;
+        while ((bytesRead = await stream.ReadAsync(buffer, cancellationToken)) > 0)
+        {
+            await file.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
+            downloadedBytes += bytesRead;
+            if (totalBytes is > 0)
+            {
+                progress?.Report(downloadedBytes * 100.0 / totalBytes.Value);
+            }
+        }
+
+        progress?.Report(100);
         return destinationPath;
     }
 
     public static void RunInstallerAndExit(string installerPath)
     {
+        var installedAppPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Programs",
+            "Keywise",
+            "Keywise.exe");
+        var runnerPath = Path.Combine(Path.GetTempPath(), "Keywise", "Updates", "run-keywise-update.cmd");
+        Directory.CreateDirectory(Path.GetDirectoryName(runnerPath)!);
+        File.WriteAllText(runnerPath, $"""
+@echo off
+start /wait "" "{installerPath}" /SILENT /NORESTART
+start "" "{installedAppPath}"
+del "%~f0"
+""");
+
         Process.Start(new ProcessStartInfo
         {
-            FileName = installerPath,
-            UseShellExecute = true
+            FileName = "cmd.exe",
+            Arguments = $"/C \"{runnerPath}\"",
+            CreateNoWindow = true,
+            WindowStyle = ProcessWindowStyle.Hidden
         });
 
         System.Windows.Application.Current.Shutdown();
