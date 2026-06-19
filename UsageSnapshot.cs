@@ -8,6 +8,8 @@ public sealed class UsageSnapshot
 
     public bool StartAtLogin { get; set; }
 
+    public string Language { get; set; } = "en-US";
+
     public long ActiveTrackingSeconds { get; set; }
 
     public long AppLaunches { get; set; }

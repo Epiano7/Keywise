@@ -75,7 +75,9 @@
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
         <Style TargetType="TabItem">
-            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="MinWidth" Value="104"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Padding" Value="16,0"/>
             <Setter Property="Margin" Value="0,0,8,0"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{DynamicResource Ink}"/>
@@ -84,9 +86,11 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
-                        <Border x:Name="TabBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                        <Border x:Name="TabBorder" Height="{TemplateBinding Height}" MinWidth="{TemplateBinding MinWidth}"
+                                Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="1" CornerRadius="8" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter x:Name="ContentSite" ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <ContentPresenter x:Name="ContentSite" ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              TextElement.Foreground="{TemplateBinding Foreground}"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
@@ -259,19 +263,6 @@
                                             </UniformGrid>
                                         </StackPanel>
                                     </Border>
-
-                                    <Border Style="{StaticResource PanelCard}">
-                                        <StackPanel>
-                                            <TextBlock Text="Test Inputs" FontSize="18" FontWeight="SemiBold"/>
-                                            <TextBlock Text="Useful while shaping the model." Foreground="{DynamicResource Muted}" Margin="0,3,0,14"/>
-                                            <WrapPanel>
-                                                <Button Content="A key" Click="SimulateA_Click"/>
-                                                <Button Content="Enter" Click="SimulateEnter_Click"/>
-                                                <Button Content="Left click" Click="SimulateLeft_Click"/>
-                                                <Button Content="Right click" Click="SimulateRight_Click"/>
-                                            </WrapPanel>
-                                        </StackPanel>
-                                    </Border>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
@@ -281,34 +272,14 @@
                 <TabItem Header="Privacy">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
                         <StackPanel Margin="0,16,0,20">
-                            <Border Background="{DynamicResource WarningSoft}" BorderBrush="{DynamicResource WarningBorder}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,14">
-                                <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource WarningInk}">
-                                    <Run FontWeight="SemiBold" Text="Security status: "/>
-                                    <Run Text="This prototype is AI-generated and has not yet completed a formal penetration test. Do not describe it as thoroughly pentested until that review is finished and documented."/>
-                                </TextBlock>
+                            <Border Style="{StaticResource PanelCard}">
+                                <StackPanel>
+                                    <TextBlock Text="Privacy Notice" FontSize="18" FontWeight="SemiBold"/>
+                                    <TextBlock TextWrapping="Wrap" FontSize="15" LineHeight="23" Margin="0,12,0,0">
+                                        Keywise is built to count your own computer usage without recording what you type or what you do on screen. When tracking is enabled, it saves local totals such as how many times each key or mouse button was pressed and how long tracking was active. It does not save typed words, key sequences, per-key timestamps, app names, window titles, websites, clipboard data, screenshots, mouse position, or screen contents. Your data stays on this computer unless you choose to export or share it. Keywise only contacts GitHub when you click the update button. This build was AI-assisted and has not yet completed a formal penetration test.
+                                    </TextBlock>
+                                </StackPanel>
                             </Border>
-
-                            <UniformGrid Columns="2">
-                                <Border Style="{StaticResource MetricCard}">
-                                    <StackPanel>
-                                        <TextBlock Text="Collected" FontSize="18" FontWeight="SemiBold"/>
-                                        <TextBlock Text="Aggregate count per key" Margin="0,12,0,0"/>
-                                        <TextBlock Text="Left, right, and middle mouse click totals"/>
-                                        <TextBlock Text="Total active tracking time"/>
-                                        <TextBlock Text="Coarse daily aggregate totals"/>
-                                    </StackPanel>
-                                </Border>
-                                <Border Style="{StaticResource MetricCard}">
-                                    <StackPanel>
-                                        <TextBlock Text="Never Collected" FontSize="18" FontWeight="SemiBold"/>
-                                        <TextBlock Text="Typed text or key sequences" Margin="0,12,0,0"/>
-                                        <TextBlock Text="Per-key timestamps"/>
-                                        <TextBlock Text="Window titles, app names, URLs, or clipboard data"/>
-                                        <TextBlock Text="Screenshots, screen contents, or mouse coordinates"/>
-                                        <TextBlock Text="Network telemetry"/>
-                                    </StackPanel>
-                                </Border>
-                            </UniformGrid>
 
                             <Border Style="{StaticResource PanelCard}">
                                 <StackPanel>
@@ -345,6 +316,20 @@
                                 <TextBlock Text="Data: %LOCALAPPDATA%\Keywise\"/>
                                 <TextBlock Text="Startup opt-in: Startup folder shortcut"/>
                                 <TextBlock Text="Uninstall: remove app files, shortcuts, startup entry, and optionally local data"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource PanelCard}">
+                            <StackPanel>
+                                <TextBlock Text="Language" FontSize="18" FontWeight="SemiBold"/>
+                                <TextBlock Text="Interface translations will be added incrementally. The selection is saved locally."
+                                           Foreground="{DynamicResource Muted}" TextWrapping="Wrap" Margin="0,4,0,12"/>
+                                <ComboBox x:Name="LanguageComboBox" Width="260" HorizontalAlignment="Left" SelectionChanged="LanguageComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="English (United States)" Tag="en-US"/>
+                                    <ComboBoxItem Content="Spanish" Tag="es"/>
+                                    <ComboBoxItem Content="French" Tag="fr"/>
+                                    <ComboBoxItem Content="German" Tag="de"/>
+                                </ComboBox>
                             </StackPanel>
                         </Border>
 
