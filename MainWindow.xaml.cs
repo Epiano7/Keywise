@@ -8,6 +8,23 @@ namespace DesktopUsageAnalytics;
 
 public partial class MainWindow : Window
 {
+    private static readonly string[] KnownKeyboardInputs =
+    [
+        "Back", "Tab", "Return", "Escape", "Space", "Capital",
+        "LeftShift", "RightShift", "LeftCtrl", "RightCtrl", "LeftAlt", "RightAlt",
+        "LWin", "RWin", "Apps", "Insert", "Delete", "Home", "End", "PageUp", "PageDown",
+        "Left", "Right", "Up", "Down", "PrintScreen", "Scroll", "Pause",
+        "D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9",
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+        "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+        "NumPad0", "NumPad1", "NumPad2", "NumPad3", "NumPad4", "NumPad5", "NumPad6", "NumPad7", "NumPad8", "NumPad9",
+        "Multiply", "Add", "Subtract", "Decimal", "Divide",
+        "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
+        "Oem1", "OemPlus", "OemComma", "OemMinus", "OemPeriod", "Oem2", "Oem3", "OemOpenBrackets", "Oem5", "Oem6", "Oem7"
+    ];
+
+    private static readonly string[] KnownMouseInputs = ["Left", "Right", "Middle"];
+
     private readonly UsageStore store = new();
     private readonly UsageAggregator aggregator;
     private readonly StartupManager startupManager = new();
@@ -35,6 +52,7 @@ public partial class MainWindow : Window
         StartAtLoginCheckBox.IsChecked = startupManager.IsEnabled;
         MinimizeToTrayCheckBox.IsChecked = aggregator.Snapshot.MinimizeToTrayOnClose;
         SelectLanguage(aggregator.Snapshot.Language);
+        InputSortComboBox.SelectedIndex = 0;
 
         trayIcon = new Forms.NotifyIcon
         {
@@ -130,6 +148,7 @@ public partial class MainWindow : Window
         KeysPerHourText.Text = (keyTotal / activeHours).ToString("N0");
         TopKeyCountText.Text = $"{keys.Count:N0} tracked";
         TopKeysList.ItemsSource = keys.Take(8).Select(item => $"{item.Key.Replace("Key.", "")}: {item.Value:N0}");
+        RefreshAllInputsList();
     }
 
     private long GetCounter(string name) => aggregator.Snapshot.Counters.GetValueOrDefault(name);
@@ -238,6 +257,34 @@ public partial class MainWindow : Window
         aggregator.Persist();
     }
 
+    private void InputSortComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        RefreshAllInputsList();
+    }
+
+    private void RefreshAllInputsList()
+    {
+        if (AllInputsList is null || InputSortComboBox is null)
+        {
+            return;
+        }
+
+        var rows = KnownKeyboardInputs
+            .Select(name => new InputUsageRow(name, "Keyboard", GetCounter($"Key.{name}")))
+            .Concat(KnownMouseInputs.Select(name => new InputUsageRow(name, "Mouse", GetCounter($"Mouse.{name}"))))
+            .ToList();
+
+        var sort = (InputSortComboBox.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Tag?.ToString() ?? "desc";
+        rows = sort switch
+        {
+            "asc" => rows.OrderBy(row => row.Count).ThenBy(row => row.Name).ToList(),
+            "name" => rows.OrderBy(row => row.Name).ToList(),
+            _ => rows.OrderByDescending(row => row.Count).ThenBy(row => row.Name).ToList()
+        };
+
+        AllInputsList.ItemsSource = rows;
+    }
+
     private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -252,12 +299,22 @@ public partial class MainWindow : Window
             }
 
             var downloadUpdate = System.Windows.MessageBox.Show(
-                $"A newer Keywise release is available.\n\nInstalled: {result.CurrentVersion}\nLatest: {result.LatestVersion}\n\nDownload the installer and close Keywise to start the update?",
+                $"A newer Keywise release is available.\n\nInstalled: {result.CurrentVersion}\nLatest: {result.LatestVersion}\n\nDownload, install, and restart Keywise now?",
                 "Keywise update available",
                 MessageBoxButton.YesNo);
             if (downloadUpdate == MessageBoxResult.Yes)
             {
-                var installerPath = await UpdateService.DownloadInstallerAsync(result);
+                CheckForUpdatesButton.IsEnabled = false;
+                UpdateProgressBar.Value = 0;
+                UpdateProgressBar.Visibility = Visibility.Visible;
+                UpdateStatusText.Text = "Downloading update...";
+                var progress = new Progress<double>(value =>
+                {
+                    UpdateProgressBar.Value = value;
+                    UpdateStatusText.Text = $"Downloading update... {value:0}%";
+                });
+                var installerPath = await UpdateService.DownloadInstallerAsync(result, progress);
+                UpdateStatusText.Text = "Installing update. Keywise will close and reopen.";
                 UpdateService.RunInstallerAndExit(installerPath);
                 return;
             }
@@ -266,6 +323,9 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
+            CheckForUpdatesButton.IsEnabled = true;
+            UpdateProgressBar.Visibility = Visibility.Collapsed;
+            UpdateStatusText.Text = "";
             var openReleases = System.Windows.MessageBox.Show(
                 $"Keywise could not check GitHub for updates.\n\n{ex.Message}\n\nOpen the releases page instead?",
                 "Keywise update check failed",
@@ -297,4 +357,6 @@ public partial class MainWindow : Window
         trayIcon.Visible = false;
         trayIcon.Dispose();
     }
+
+    private sealed record InputUsageRow(string Name, string Kind, long Count);
 }
