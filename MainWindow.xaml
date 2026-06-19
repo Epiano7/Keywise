@@ -318,7 +318,7 @@
                                 <StackPanel>
                                     <TextBlock Text="Privacy Notice" FontSize="18" FontWeight="SemiBold"/>
                                     <TextBlock TextWrapping="Wrap" FontSize="15" LineHeight="23" Margin="0,12,0,0">
-                                        Keywise is built to count your own computer usage without recording what you type or what you do on screen. When tracking is enabled, it saves local totals such as how many times each key or mouse button was pressed and how long tracking was active. It does not save typed words, key sequences, per-key timestamps, app names, window titles, websites, clipboard data, screenshots, mouse position, or screen contents. Your data stays on this computer unless you choose to export or share it. Keywise only contacts GitHub when you click the update button. This build was AI-assisted and has not yet completed a formal penetration test.
+                                        Keywise is built to count your own computer usage without recording what you type or what you do on screen. When tracking is enabled, it saves local totals such as how many times each key or mouse button was pressed, how long tracking was active, app launch count, pause count, and per-day aggregate totals. It does not save typed words, key sequences, per-key timestamps, app names, window titles, websites, clipboard data, screenshots, mouse position, or screen contents. Your data stays on this computer unless you choose to export or share it. Keywise only contacts GitHub when you click the update button.
                                     </TextBlock>
                                 </StackPanel>
                             </Border>

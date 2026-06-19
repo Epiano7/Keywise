@@ -4,7 +4,7 @@ Privacy-first Windows desktop usage analytics prototype.
 
 ## Current Status
 
-This is an AI-generated prototype and has not yet completed a formal penetration test.
+This is an AI-generated prototype with an initial security review.
 
 The app currently includes:
 
@@ -17,11 +17,10 @@ The app currently includes:
 - Privacy and settings screens
 - Light/dark UI theme following Windows app settings
 - Global Windows input hooks for aggregate tracking
-- Simulator buttons for validating the counter model
 
 ## Privacy Model
 
-The app is designed to store aggregate counters only. It must not store typed text, ordered key sequences, per-key timestamps, window titles, app names, URLs, clipboard data, screenshots, mouse coordinates, or raw input logs.
+The app is designed to store aggregate counters only, including key/button totals, active tracking time, app launch count, pause count, and per-day aggregate totals. It must not store typed text, ordered key sequences, per-key timestamps, window titles, app names, URLs, clipboard data, screenshots, mouse coordinates, or raw input logs.
 
 ## Build
 
@@ -46,4 +45,4 @@ Startup should be disabled by default and enabled only by explicit user choice.
 
 ## Release Packaging
 
-See [Release.md](Release.md). The current release path creates a portable Windows zip. A signed installer and updater should come before public distribution.
+See [Release.md](Release.md). The release path creates a Windows installer, portable zip, and SHA-256 checksum file. Code signing should be added before broad public distribution.
