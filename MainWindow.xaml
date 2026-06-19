@@ -64,24 +64,56 @@
             <Setter Property="Margin" Value="0,8,0,0"/>
         </Style>
         <Style TargetType="Button">
-            <Setter Property="MinHeight" Value="36"/>
-            <Setter Property="MinWidth" Value="132"/>
-            <Setter Property="Padding" Value="16,7"/>
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="MinWidth" Value="148"/>
+            <Setter Property="Padding" Value="18,0"/>
             <Setter Property="Margin" Value="0,0,8,8"/>
             <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorder}"/>
             <Setter Property="Foreground" Value="{DynamicResource ButtonFg}"/>
             <Setter Property="Background" Value="{DynamicResource ButtonBg}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource Accent}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource AccentSoft}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style TargetType="TabControl">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
         <Style TargetType="TabItem">
-            <Setter Property="MinWidth" Value="96"/>
-            <Setter Property="Height" Value="38"/>
-            <Setter Property="Padding" Value="14,0"/>
-            <Setter Property="Margin" Value="0,0,6,0"/>
+            <Setter Property="MinWidth" Value="118"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{DynamicResource Ink}"/>
             <Setter Property="Background" Value="{DynamicResource PanelAlt}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource Line}"/>
@@ -90,7 +122,7 @@
                     <ControlTemplate TargetType="TabItem">
                         <Border x:Name="TabBorder" Height="{TemplateBinding Height}" MinWidth="{TemplateBinding MinWidth}"
                                 Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="1" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                BorderThickness="1" CornerRadius="4" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
                             <ContentPresenter x:Name="ContentSite" ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"
                                               TextElement.Foreground="{TemplateBinding Foreground}"/>
                         </Border>
@@ -145,8 +177,9 @@
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Background="{DynamicResource StatusBg}" BorderBrush="{DynamicResource StatusBorder}" BorderThickness="1"
-                            CornerRadius="8" Padding="12,8" Margin="0,0,10,0">
-                        <TextBlock x:Name="StatusText" Foreground="White" FontWeight="SemiBold"/>
+                            CornerRadius="4" Height="44" MinWidth="150" Padding="18,0" Margin="0,0,10,8">
+                        <TextBlock x:Name="StatusText" Foreground="White" FontWeight="SemiBold" FontSize="14"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"/>
                     </Border>
                     <Button x:Name="TrackingToggleButton" Click="TrackingToggleButton_Click"/>
                 </StackPanel>
@@ -167,21 +200,21 @@
                 </TextBlock>
             </Border>
 
-            <TabControl Grid.Row="1">
+            <TabControl x:Name="MainTabs" Grid.Row="1" SelectionChanged="MainTabs_SelectionChanged">
                 <TabItem Header="Dashboard">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
                         <StackPanel Margin="0,16,0,20">
                             <Grid Margin="0,0,0,14">
                                 <StackPanel>
-                                    <TextBlock Text="Usage Overview" FontSize="22" FontWeight="SemiBold"/>
-                                    <TextBlock Text="Live aggregate counters for this machine" Foreground="{DynamicResource Muted}" Margin="0,4,0,0"/>
+                                    <TextBlock Text="Stats" FontSize="22" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Your high-level Keywise totals" Foreground="{DynamicResource Muted}" Margin="0,4,0,0"/>
                                 </StackPanel>
                             </Grid>
 
-                            <UniformGrid Columns="4">
+                            <UniformGrid Columns="5">
                                 <Border Style="{StaticResource MetricCard}">
                                     <StackPanel>
-                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Active time"/>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Total time"/>
                                         <TextBlock x:Name="ActiveTimeText" Style="{StaticResource MetricValue}" Text="0m" FontSize="29"/>
                                         <TextBlock Text="Total enabled time" Foreground="{DynamicResource Muted}" FontSize="12"/>
                                     </StackPanel>
@@ -191,6 +224,13 @@
                                         <TextBlock Style="{StaticResource MetricLabel}" Text="Session"/>
                                         <TextBlock x:Name="SessionText" Style="{StaticResource MetricValue}" Text="0m" FontSize="29"/>
                                         <TextBlock Text="Current run" Foreground="{DynamicResource Muted}" FontSize="12"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource MetricCard}">
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource MetricLabel}" Text="Sessions"/>
+                                        <TextBlock x:Name="SessionCountText" Style="{StaticResource MetricValue}" Text="0"/>
+                                        <TextBlock Text="App launches" Foreground="{DynamicResource Muted}" FontSize="12"/>
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource MetricCard}">
@@ -208,72 +248,13 @@
                                     </StackPanel>
                                 </Border>
                             </UniformGrid>
-
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="1.35*"/>
-                                    <ColumnDefinition Width="1*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <Border Grid.Column="0" Style="{StaticResource PanelCard}" Margin="0,0,14,14">
-                                    <StackPanel>
-                                        <TextBlock Text="Keyboard" FontSize="18" FontWeight="SemiBold"/>
-                                        <TextBlock Text="Most-used keys and rate" Foreground="{DynamicResource Muted}" Margin="0,3,0,14"/>
-                                        <UniformGrid Columns="2">
-                                            <Border Background="{DynamicResource PanelAlt}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,10,12">
-                                                <StackPanel>
-                                                    <TextBlock Text="Keys per active hour" Style="{StaticResource MetricLabel}"/>
-                                                    <TextBlock x:Name="KeysPerHourText" FontSize="28" FontWeight="SemiBold"/>
-                                                </StackPanel>
-                                            </Border>
-                                            <Border Background="{DynamicResource PanelAlt}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,12">
-                                                <StackPanel>
-                                                    <TextBlock Text="Top keys" Style="{StaticResource MetricLabel}"/>
-                                                    <TextBlock x:Name="TopKeyCountText" Text="0 tracked" FontSize="28" FontWeight="SemiBold"/>
-                                                </StackPanel>
-                                            </Border>
-                                        </UniformGrid>
-                                        <ItemsControl x:Name="TopKeysList" ItemTemplate="{StaticResource TopKeyTemplate}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <WrapPanel/>
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                        </ItemsControl>
-                                    </StackPanel>
-                                </Border>
-
-                                <StackPanel Grid.Column="1">
-                                    <Border Style="{StaticResource PanelCard}">
-                                        <StackPanel>
-                                            <TextBlock Text="Mouse" FontSize="18" FontWeight="SemiBold"/>
-                                            <TextBlock Text="Button totals" Foreground="{DynamicResource Muted}" Margin="0,3,0,14"/>
-                                            <UniformGrid Columns="2">
-                                                <Border Background="{DynamicResource PanelAlt}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,10,10">
-                                                    <StackPanel>
-                                                        <TextBlock Text="Left" Style="{StaticResource MetricLabel}"/>
-                                                        <TextBlock x:Name="LeftClickText" FontSize="26" FontWeight="SemiBold"/>
-                                                    </StackPanel>
-                                                </Border>
-                                                <Border Background="{DynamicResource PanelAlt}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,10">
-                                                    <StackPanel>
-                                                        <TextBlock Text="Right" Style="{StaticResource MetricLabel}"/>
-                                                        <TextBlock x:Name="RightClickText" FontSize="26" FontWeight="SemiBold"/>
-                                                    </StackPanel>
-                                                </Border>
-                                            </UniformGrid>
-                                        </StackPanel>
-                                    </Border>
-                                </StackPanel>
-                            </Grid>
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>
 
                 <TabItem Header="Inputs">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
-                        <StackPanel Margin="0,16,0,20">
-                            <Border Style="{StaticResource PanelCard}">
+                    <DockPanel Margin="0,16,10,20">
+                            <Border DockPanel.Dock="Top" Style="{StaticResource PanelCard}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -291,7 +272,13 @@
                                 </Grid>
                             </Border>
 
-                            <ListView x:Name="AllInputsList" Background="{DynamicResource Panel}" BorderBrush="{DynamicResource Line}" Foreground="{DynamicResource Ink}">
+                            <ListView x:Name="AllInputsList"
+                                      Background="{DynamicResource Panel}"
+                                      BorderBrush="{DynamicResource Line}"
+                                      Foreground="{DynamicResource Ink}"
+                                      ScrollViewer.CanContentScroll="True"
+                                      VirtualizingPanel.IsVirtualizing="True"
+                                      VirtualizingPanel.VirtualizationMode="Recycling">
                                 <ListView.View>
                                     <GridView>
                                         <GridViewColumn Header="Input" DisplayMemberBinding="{Binding Name}" Width="260"/>
@@ -300,8 +287,7 @@
                                     </GridView>
                                 </ListView.View>
                             </ListView>
-                        </StackPanel>
-                    </ScrollViewer>
+                    </DockPanel>
                 </TabItem>
 
                 <TabItem Header="Privacy">
@@ -367,13 +353,13 @@
                         <Border Style="{StaticResource PanelCard}">
                             <StackPanel>
                                 <TextBlock Text="Language" FontSize="18" FontWeight="SemiBold"/>
-                                <TextBlock Text="Interface translations will be added incrementally. The selection is saved locally."
+                                <TextBlock Text="Only English is active in this build. Other languages will be enabled after the interface text is fully translated."
                                            Foreground="{DynamicResource Muted}" TextWrapping="Wrap" Margin="0,4,0,12"/>
                                 <ComboBox x:Name="LanguageComboBox" Width="260" HorizontalAlignment="Left" SelectionChanged="LanguageComboBox_SelectionChanged">
                                     <ComboBoxItem Content="English (United States)" Tag="en-US"/>
-                                    <ComboBoxItem Content="Spanish" Tag="es"/>
-                                    <ComboBoxItem Content="French" Tag="fr"/>
-                                    <ComboBoxItem Content="German" Tag="de"/>
+                                    <ComboBoxItem Content="Spanish (coming soon)" Tag="es" IsEnabled="False"/>
+                                    <ComboBoxItem Content="French (coming soon)" Tag="fr" IsEnabled="False"/>
+                                    <ComboBoxItem Content="German (coming soon)" Tag="de" IsEnabled="False"/>
                                 </ComboBox>
                             </StackPanel>
                         </Border>

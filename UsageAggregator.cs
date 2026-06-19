@@ -3,8 +3,11 @@ namespace DesktopUsageAnalytics;
 public sealed class UsageAggregator
 {
     private readonly UsageStore store;
+    private readonly object syncRoot = new();
     private readonly UsageSnapshot snapshot;
+    private readonly DateTime sessionStartedUtc = DateTime.UtcNow;
     private DateTime? activeSinceUtc;
+    private bool hasUnsavedChanges;
 
     public UsageAggregator(UsageStore store)
     {
@@ -21,88 +24,140 @@ public sealed class UsageAggregator
 
     public UsageSnapshot Snapshot => snapshot;
 
-    public bool TrackingEnabled => snapshot.TrackingEnabled;
+    public bool TrackingEnabled
+    {
+        get
+        {
+            lock (syncRoot)
+            {
+                return snapshot.TrackingEnabled;
+            }
+        }
+    }
 
-    public TimeSpan CurrentSessionDuration =>
-        activeSinceUtc is null ? TimeSpan.Zero : DateTime.UtcNow - activeSinceUtc.Value;
+    public bool HasUnsavedChanges
+    {
+        get
+        {
+            lock (syncRoot)
+            {
+                return hasUnsavedChanges;
+            }
+        }
+    }
+
+    public TimeSpan CurrentSessionDuration => DateTime.UtcNow - sessionStartedUtc;
+
+    public TimeSpan PendingActiveDuration =>
+        GetPendingActiveDuration();
+
+    public IReadOnlyDictionary<string, long> GetCountersSnapshot()
+    {
+        lock (syncRoot)
+        {
+            return new Dictionary<string, long>(snapshot.Counters);
+        }
+    }
 
     public void SetTrackingEnabled(bool enabled)
     {
-        if (enabled == snapshot.TrackingEnabled)
+        lock (syncRoot)
         {
-            return;
-        }
+            if (enabled == snapshot.TrackingEnabled)
+            {
+                return;
+            }
 
-        if (enabled)
-        {
-            activeSinceUtc = DateTime.UtcNow;
-        }
-        else
-        {
-            FlushActiveTime();
-            snapshot.PauseCount += 1;
-        }
+            if (enabled)
+            {
+                activeSinceUtc = DateTime.UtcNow;
+            }
+            else
+            {
+                FlushActiveTime();
+                snapshot.PauseCount += 1;
+            }
 
-        snapshot.TrackingEnabled = enabled;
-        Persist();
+            snapshot.TrackingEnabled = enabled;
+            PersistCore();
+        }
     }
 
     public void Increment(InputBucket bucket)
     {
-        if (!snapshot.TrackingEnabled)
+        lock (syncRoot)
         {
-            return;
-        }
+            if (!snapshot.TrackingEnabled)
+            {
+                return;
+            }
 
-        snapshot.Counters[bucket.Name] = snapshot.Counters.GetValueOrDefault(bucket.Name) + 1;
+            snapshot.Counters[bucket.Name] = snapshot.Counters.GetValueOrDefault(bucket.Name) + 1;
 
-        var today = GetToday();
-        if (bucket.Name.StartsWith("Key.", StringComparison.Ordinal))
-        {
-            today.KeyPresses += 1;
-        }
-        else if (bucket.Name == "Mouse.Left")
-        {
-            today.MouseLeft += 1;
-        }
-        else if (bucket.Name == "Mouse.Right")
-        {
-            today.MouseRight += 1;
-        }
-        else if (bucket.Name == "Mouse.Middle")
-        {
-            today.MouseMiddle += 1;
-        }
+            var today = GetToday();
+            if (bucket.Name.StartsWith("Key.", StringComparison.Ordinal))
+            {
+                today.KeyPresses += 1;
+            }
+            else if (bucket.Name == "Mouse.Left")
+            {
+                today.MouseLeft += 1;
+            }
+            else if (bucket.Name == "Mouse.Right")
+            {
+                today.MouseRight += 1;
+            }
+            else if (bucket.Name == "Mouse.Middle")
+            {
+                today.MouseMiddle += 1;
+            }
 
-        Persist();
+            hasUnsavedChanges = true;
+        }
     }
 
     public void ResetCounts()
     {
-        snapshot.Counters.Clear();
-        snapshot.Daily.Clear();
-        snapshot.ActiveTrackingSeconds = 0;
-        activeSinceUtc = snapshot.TrackingEnabled ? DateTime.UtcNow : null;
-        Persist();
+        lock (syncRoot)
+        {
+            snapshot.Counters.Clear();
+            snapshot.Daily.Clear();
+            snapshot.ActiveTrackingSeconds = 0;
+            activeSinceUtc = snapshot.TrackingEnabled ? DateTime.UtcNow : null;
+            PersistCore();
+        }
     }
 
     public void DeleteLocalData()
     {
-        snapshot.Counters.Clear();
-        snapshot.Daily.Clear();
-        snapshot.ActiveTrackingSeconds = 0;
-        snapshot.AppLaunches = 0;
-        snapshot.PauseCount = 0;
-        snapshot.StartAtLogin = false;
-        snapshot.TrackingEnabled = false;
-        activeSinceUtc = null;
-        store.Delete();
+        lock (syncRoot)
+        {
+            snapshot.Counters.Clear();
+            snapshot.Daily.Clear();
+            snapshot.ActiveTrackingSeconds = 0;
+            snapshot.AppLaunches = 0;
+            snapshot.PauseCount = 0;
+            snapshot.StartAtLogin = false;
+            snapshot.TrackingEnabled = false;
+            activeSinceUtc = null;
+            hasUnsavedChanges = false;
+            store.Delete();
+        }
     }
 
     public void Persist()
     {
+        lock (syncRoot)
+        {
+            PersistCore();
+        }
+    }
+
+    private void PersistCore()
+    {
         FlushActiveTime();
         store.Save(snapshot);
+        hasUnsavedChanges = false;
     }
 
     private DailyUsageSnapshot GetToday()
@@ -134,5 +189,13 @@ public sealed class UsageAggregator
         snapshot.ActiveTrackingSeconds += elapsed;
         GetToday().ActiveTrackingSeconds += elapsed;
         activeSinceUtc = now;
+    }
+
+    private TimeSpan GetPendingActiveDuration()
+    {
+        lock (syncRoot)
+        {
+            return activeSinceUtc is null ? TimeSpan.Zero : DateTime.UtcNow - activeSinceUtc.Value;
+        }
     }
 }
