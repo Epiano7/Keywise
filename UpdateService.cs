@@ -2,7 +2,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace DesktopUsageAnalytics;
 
@@ -11,7 +13,8 @@ public sealed record UpdateCheckResult(
     string CurrentVersion,
     string? LatestVersion,
     string? ReleaseUrl,
-    string? InstallerDownloadUrl);
+    string? InstallerDownloadUrl,
+    string? InstallerSha256);
 
 public static class UpdateService
 {
@@ -34,6 +37,7 @@ public static class UpdateService
             ? urlElement.GetString()
             : ReleasesUrl;
         string? installerDownloadUrl = null;
+        string? installerSha256 = null;
         if (root.TryGetProperty("assets", out var assets))
         {
             foreach (var asset in assets.EnumerateArray())
@@ -43,6 +47,9 @@ public static class UpdateService
                 {
                     installerDownloadUrl = asset.TryGetProperty("browser_download_url", out var downloadElement)
                         ? downloadElement.GetString()
+                        : null;
+                    installerSha256 = asset.TryGetProperty("digest", out var digestElement)
+                        ? NormalizeSha256Digest(digestElement.GetString())
                         : null;
                     break;
                 }
@@ -54,7 +61,7 @@ public static class UpdateService
             && Version.TryParse(latestVersionText, out var latestVersionValue)
             && latestVersionValue > currentVersionValue;
 
-        return new UpdateCheckResult(hasUpdate, currentVersion, latestTag, releaseUrl, installerDownloadUrl);
+        return new UpdateCheckResult(hasUpdate, currentVersion, latestTag, releaseUrl, installerDownloadUrl, installerSha256);
     }
 
     public static async Task<string> DownloadInstallerAsync(
@@ -67,7 +74,14 @@ public static class UpdateService
             throw new InvalidOperationException("This release does not include a Keywise installer asset.");
         }
 
-        var downloadDirectory = Path.Combine(Path.GetTempPath(), "Keywise", "Updates");
+        if (string.IsNullOrWhiteSpace(update.InstallerSha256))
+        {
+            throw new InvalidOperationException("This release does not include a trusted SHA-256 digest for the installer.");
+        }
+
+        CleanupOldUpdateFiles();
+        var updatesDirectory = Path.Combine(Path.GetTempPath(), "Keywise", "Updates");
+        var downloadDirectory = Path.Combine(updatesDirectory, Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(downloadDirectory);
         var version = update.LatestVersion?.TrimStart('v', 'V') ?? "latest";
         var destinationPath = Path.Combine(downloadDirectory, $"Keywise-Setup-{version}.exe");
@@ -77,19 +91,27 @@ public static class UpdateService
         using var response = await httpClient.GetAsync(update.InstallerDownloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         response.EnsureSuccessStatusCode();
         var totalBytes = response.Content.Headers.ContentLength;
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-        await using var file = File.Create(destinationPath);
-        var buffer = new byte[81920];
-        long downloadedBytes = 0;
-        int bytesRead;
-        while ((bytesRead = await stream.ReadAsync(buffer, cancellationToken)) > 0)
         {
-            await file.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
-            downloadedBytes += bytesRead;
-            if (totalBytes is > 0)
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            await using var file = File.Create(destinationPath);
+            var buffer = new byte[81920];
+            long downloadedBytes = 0;
+            int bytesRead;
+            while ((bytesRead = await stream.ReadAsync(buffer, cancellationToken)) > 0)
             {
-                progress?.Report(downloadedBytes * 100.0 / totalBytes.Value);
+                await file.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
+                downloadedBytes += bytesRead;
+                if (totalBytes is > 0)
+                {
+                    progress?.Report(downloadedBytes * 95.0 / totalBytes.Value);
+                }
             }
+        }
+
+        if (!VerifySha256(destinationPath, update.InstallerSha256))
+        {
+            TryDeleteFile(destinationPath);
+            throw new InvalidOperationException("The downloaded installer did not match the release SHA-256 digest. The update was not run.");
         }
 
         progress?.Report(100);
@@ -103,11 +125,13 @@ public static class UpdateService
             "Programs",
             "Keywise",
             "Keywise.exe");
-        var runnerPath = Path.Combine(Path.GetTempPath(), "Keywise", "Updates", "run-keywise-update.cmd");
+        var runnerDirectory = Path.GetDirectoryName(installerPath) ?? Path.Combine(Path.GetTempPath(), "Keywise", "Updates");
+        var runnerPath = Path.Combine(runnerDirectory, $"run-keywise-update-{Guid.NewGuid():N}.cmd");
         Directory.CreateDirectory(Path.GetDirectoryName(runnerPath)!);
         File.WriteAllText(runnerPath, $"""
 @echo off
 start /wait "" "{installerPath}" /SILENT /NORESTART
+del /q "{installerPath}" >nul 2>nul
 start "" "{installedAppPath}"
 del "%~f0"
 """);
@@ -136,5 +160,84 @@ del "%~f0"
     {
         var version = Assembly.GetExecutingAssembly().GetName().Version;
         return version is null ? "0.0.0" : $"{version.Major}.{version.Minor}.{version.Build}";
+    }
+
+    private static string? NormalizeSha256Digest(string? digest)
+    {
+        if (string.IsNullOrWhiteSpace(digest))
+        {
+            return null;
+        }
+
+        var value = digest.Trim();
+        if (value.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase))
+        {
+            value = value["sha256:".Length..];
+        }
+
+        return Regex.IsMatch(value, "^[a-fA-F0-9]{64}$") ? value.ToUpperInvariant() : null;
+    }
+
+    private static bool VerifySha256(string filePath, string expectedSha256)
+    {
+        using var stream = File.OpenRead(filePath);
+        var actual = Convert.ToHexString(SHA256.HashData(stream));
+        return CryptographicOperations.FixedTimeEquals(
+            Convert.FromHexString(actual),
+            Convert.FromHexString(expectedSha256));
+    }
+
+    private static void CleanupOldUpdateFiles()
+    {
+        var updatesDirectory = Path.Combine(Path.GetTempPath(), "Keywise", "Updates");
+        if (!Directory.Exists(updatesDirectory))
+        {
+            return;
+        }
+
+        foreach (var file in Directory.EnumerateFiles(updatesDirectory, "Keywise-Setup-*.exe", SearchOption.AllDirectories))
+        {
+            TryDeleteFile(file);
+        }
+
+        foreach (var file in Directory.EnumerateFiles(updatesDirectory, "run-keywise-update*.cmd", SearchOption.AllDirectories))
+        {
+            TryDeleteFile(file);
+        }
+
+        foreach (var directory in Directory.EnumerateDirectories(updatesDirectory))
+        {
+            TryDeleteDirectory(directory);
+        }
+    }
+
+    private static void TryDeleteFile(string filePath)
+    {
+        try
+        {
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
+        catch
+        {
+            // Best-effort cleanup only.
+        }
+    }
+
+    private static void TryDeleteDirectory(string directoryPath)
+    {
+        try
+        {
+            if (Directory.Exists(directoryPath) && !Directory.EnumerateFileSystemEntries(directoryPath).Any())
+            {
+                Directory.Delete(directoryPath);
+            }
+        }
+        catch
+        {
+            // Best-effort cleanup only.
+        }
     }
 }

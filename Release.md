@@ -32,8 +32,9 @@ The release workflow builds:
 
 - `Keywise-Setup-<version>.exe`
 - `Keywise-win-x64.zip`
+- `checksums.txt`
 
-It also creates the GitHub Release and attaches both assets.
+It also creates the GitHub Release and attaches those assets.
 
 ## Upgrade Behavior
 
@@ -49,10 +50,10 @@ Local usage data is stored separately and is preserved across upgrades and unins
 %LOCALAPPDATA%\Keywise\
 ```
 
-The app includes an opt-in update check button. It contacts GitHub only when the user clicks it, then opens the GitHub release page if a newer version is available.
+The app includes an opt-in update check button. It contacts GitHub only when the user clicks it. If a newer version is available, Keywise downloads the installer to a temporary per-update folder, verifies the downloaded installer against the GitHub release asset SHA-256 digest, and refuses to run the installer if verification fails.
 
 ## Before Public Releases
 
 - Add code signing.
 - Document the privacy/security review.
-- Do not claim formal pentesting until it has actually been completed.
+- Protect release tags and pin release workflow dependencies.
