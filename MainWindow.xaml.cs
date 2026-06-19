@@ -32,6 +32,7 @@ public partial class MainWindow : Window
 
         DataPathText.Text = store.DataPath;
         StartAtLoginCheckBox.IsChecked = startupManager.IsEnabled;
+        SelectLanguage(aggregator.Snapshot.Language);
 
         trayIcon = new Forms.NotifyIcon
         {
@@ -203,6 +204,31 @@ public partial class MainWindow : Window
         StartAtLoginCheckBox.IsChecked = startupManager.IsEnabled;
     }
 
+    private void SelectLanguage(string language)
+    {
+        foreach (var item in LanguageComboBox.Items.OfType<System.Windows.Controls.ComboBoxItem>())
+        {
+            if (string.Equals(item.Tag?.ToString(), language, StringComparison.OrdinalIgnoreCase))
+            {
+                LanguageComboBox.SelectedItem = item;
+                return;
+            }
+        }
+
+        LanguageComboBox.SelectedIndex = 0;
+    }
+
+    private void LanguageComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (LanguageComboBox.SelectedItem is not System.Windows.Controls.ComboBoxItem item)
+        {
+            return;
+        }
+
+        aggregator.Snapshot.Language = item.Tag?.ToString() ?? "en-US";
+        aggregator.Persist();
+    }
+
     private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -216,14 +242,18 @@ public partial class MainWindow : Window
                 return;
             }
 
-            var openRelease = System.Windows.MessageBox.Show(
-                $"A newer Keywise release is available.\n\nInstalled: {result.CurrentVersion}\nLatest: {result.LatestVersion}\n\nOpen the GitHub release page?",
+            var downloadUpdate = System.Windows.MessageBox.Show(
+                $"A newer Keywise release is available.\n\nInstalled: {result.CurrentVersion}\nLatest: {result.LatestVersion}\n\nDownload the installer and close Keywise to start the update?",
                 "Keywise update available",
                 MessageBoxButton.YesNo);
-            if (openRelease == MessageBoxResult.Yes)
+            if (downloadUpdate == MessageBoxResult.Yes)
             {
-                UpdateService.OpenReleasesPage(result.ReleaseUrl);
+                var installerPath = await UpdateService.DownloadInstallerAsync(result);
+                UpdateService.RunInstallerAndExit(installerPath);
+                return;
             }
+
+            UpdateService.OpenReleasesPage(result.ReleaseUrl);
         }
         catch (Exception ex)
         {
