@@ -10,14 +10,15 @@
     <AssemblyName>Keywise</AssemblyName>
     <Product>Keywise</Product>
     <Description>Privacy-first aggregate keyboard and mouse usage analytics for Windows.</Description>
-    <Version>0.1.5</Version>
-    <AssemblyVersion>0.1.5.0</AssemblyVersion>
-    <FileVersion>0.1.5.0</FileVersion>
+    <Version>0.1.6</Version>
+    <AssemblyVersion>0.1.6.0</AssemblyVersion>
+    <FileVersion>0.1.6.0</FileVersion>
     <ApplicationIcon>Assets\keywise.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <Resource Include="Assets\keywise.ico" />
+    <Resource Include="Assets\keywise-logo-source.png" />
     <Content Include="Assets\keywise-keycap.svg" CopyToOutputDirectory="Never" />
     <Content Include="Assets\keywise-pulse.svg" CopyToOutputDirectory="Never" />
     <Content Include="Assets\keywise-tally.svg" CopyToOutputDirectory="Never" />
