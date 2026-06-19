@@ -311,6 +311,16 @@
 
                         <Border Style="{StaticResource PanelCard}">
                             <StackPanel>
+                                <TextBlock Text="Window Behavior" FontSize="18" FontWeight="SemiBold"/>
+                                <CheckBox x:Name="MinimizeToTrayCheckBox" Content="Keep Keywise running in the tray when I close the window" Margin="0,12,0,6"
+                                          Foreground="{DynamicResource Ink}" Checked="MinimizeToTrayCheckBox_Changed" Unchecked="MinimizeToTrayCheckBox_Changed"/>
+                                <TextBlock Text="Use Quit from the tray menu when you want Keywise to fully exit."
+                                           Foreground="{DynamicResource Muted}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource PanelCard}">
+                            <StackPanel>
                                 <TextBlock Text="Install Layout Plan" FontSize="18" FontWeight="SemiBold"/>
                                 <TextBlock Text="App: %LOCALAPPDATA%\Programs\Keywise\" Margin="0,12,0,0"/>
                                 <TextBlock Text="Data: %LOCALAPPDATA%\Keywise\"/>

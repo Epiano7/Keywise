@@ -14,6 +14,7 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer refreshTimer = new();
     private readonly Forms.NotifyIcon trayIcon;
     private readonly WindowsInputMonitor inputMonitor;
+    private bool isExiting;
 
     public MainWindow()
     {
@@ -32,6 +33,7 @@ public partial class MainWindow : Window
 
         DataPathText.Text = store.DataPath;
         StartAtLoginCheckBox.IsChecked = startupManager.IsEnabled;
+        MinimizeToTrayCheckBox.IsChecked = aggregator.Snapshot.MinimizeToTrayOnClose;
         SelectLanguage(aggregator.Snapshot.Language);
 
         trayIcon = new Forms.NotifyIcon
@@ -81,6 +83,7 @@ public partial class MainWindow : Window
         menu.Items.Add("Save counts", null, (_, _) => aggregator.Persist());
         menu.Items.Add("Quit", null, (_, _) =>
         {
+            isExiting = true;
             trayIcon.Visible = false;
             Close();
         });
@@ -204,6 +207,12 @@ public partial class MainWindow : Window
         StartAtLoginCheckBox.IsChecked = startupManager.IsEnabled;
     }
 
+    private void MinimizeToTrayCheckBox_Changed(object sender, RoutedEventArgs e)
+    {
+        aggregator.Snapshot.MinimizeToTrayOnClose = MinimizeToTrayCheckBox.IsChecked == true;
+        aggregator.Persist();
+    }
+
     private void SelectLanguage(string language)
     {
         foreach (var item in LanguageComboBox.Items.OfType<System.Windows.Controls.ComboBoxItem>())
@@ -275,6 +284,13 @@ public partial class MainWindow : Window
 
     private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
+        if (!isExiting && aggregator.Snapshot.MinimizeToTrayOnClose)
+        {
+            e.Cancel = true;
+            Hide();
+            return;
+        }
+
         aggregator.Persist();
         SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
         inputMonitor.Dispose();
