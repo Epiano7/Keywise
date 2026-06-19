@@ -68,6 +68,7 @@ public partial class MainWindow : Window
 
         StartInputMonitor();
         RefreshDashboard();
+        UpdateNavButtons();
     }
 
     private static Drawing.Icon LoadTrayIcon()
@@ -85,6 +86,7 @@ public partial class MainWindow : Window
         if (e.Category is UserPreferenceCategory.General or UserPreferenceCategory.VisualStyle)
         {
             Dispatcher.Invoke(() => ThemeManager.Apply(Resources));
+            Dispatcher.Invoke(UpdateNavButtons);
         }
     }
 
@@ -272,11 +274,54 @@ public partial class MainWindow : Window
 
     private void MainTabs_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
     {
+        if (!ReferenceEquals(sender, MainTabs))
+        {
+            return;
+        }
+
+        UpdateNavButtons();
         if (MainTabs?.SelectedIndex == 1)
         {
             RefreshAllInputsList();
         }
     }
+
+    private void DashboardNavButton_Click(object sender, RoutedEventArgs e) => SelectTab(0);
+
+    private void InputsNavButton_Click(object sender, RoutedEventArgs e) => SelectTab(1);
+
+    private void PrivacyNavButton_Click(object sender, RoutedEventArgs e) => SelectTab(2);
+
+    private void SettingsNavButton_Click(object sender, RoutedEventArgs e) => SelectTab(3);
+
+    private void SelectTab(int index)
+    {
+        MainTabs.SelectedIndex = index;
+        UpdateNavButtons();
+    }
+
+    private void UpdateNavButtons()
+    {
+        if (DashboardNavButton is null)
+        {
+            return;
+        }
+
+        SetNavButtonState(DashboardNavButton, MainTabs.SelectedIndex == 0);
+        SetNavButtonState(InputsNavButton, MainTabs.SelectedIndex == 1);
+        SetNavButtonState(PrivacyNavButton, MainTabs.SelectedIndex == 2);
+        SetNavButtonState(SettingsNavButton, MainTabs.SelectedIndex == 3);
+    }
+
+    private void SetNavButtonState(System.Windows.Controls.Button button, bool selected)
+    {
+        button.Background = GetBrush(selected ? "AccentSoft" : "ButtonBg");
+        button.BorderBrush = GetBrush(selected ? "Accent" : "ButtonBorder");
+        button.Foreground = GetBrush(selected ? "AccentInk" : "ButtonFg");
+    }
+
+    private System.Windows.Media.Brush GetBrush(string resourceName) =>
+        Resources[resourceName] as System.Windows.Media.Brush ?? System.Windows.Media.Brushes.Transparent;
 
     private void RefreshAllInputsList()
     {
