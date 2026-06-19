@@ -1,4 +1,5 @@
 using Microsoft.Win32;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Threading;
 using Drawing = System.Drawing;
@@ -28,9 +29,11 @@ public partial class MainWindow : Window
     private readonly UsageStore store = new();
     private readonly UsageAggregator aggregator;
     private readonly StartupManager startupManager = new();
+    private readonly Stopwatch sessionClock = Stopwatch.StartNew();
     private readonly DispatcherTimer refreshTimer = new();
     private readonly Forms.NotifyIcon trayIcon;
     private readonly WindowsInputMonitor inputMonitor;
+    private DateTime lastAutoSaveUtc = DateTime.UtcNow;
     private bool isExiting;
 
     public MainWindow()
@@ -41,11 +44,7 @@ public partial class MainWindow : Window
         SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
         inputMonitor = new WindowsInputMonitor(bucket =>
         {
-            Dispatcher.Invoke(() =>
-            {
-                aggregator.Increment(bucket);
-                RefreshDashboard();
-            });
+            aggregator.Increment(bucket);
         });
 
         DataPathText.Text = store.DataPath;
@@ -128,30 +127,39 @@ public partial class MainWindow : Window
     private void RefreshDashboard()
     {
         var snapshot = aggregator.Snapshot;
-        var keys = snapshot.Counters
+        var counters = aggregator.GetCountersSnapshot();
+        var keys = counters
             .Where(item => item.Key.StartsWith("Key.", StringComparison.Ordinal))
             .OrderByDescending(item => item.Value)
             .ToList();
-        var mouseTotal = GetCounter("Mouse.Left") + GetCounter("Mouse.Right") + GetCounter("Mouse.Middle");
+        var mouseTotal = counters.GetValueOrDefault("Mouse.Left") + counters.GetValueOrDefault("Mouse.Right") + counters.GetValueOrDefault("Mouse.Middle");
         var keyTotal = keys.Sum(item => item.Value);
-        var activeSeconds = snapshot.ActiveTrackingSeconds + (long)aggregator.CurrentSessionDuration.TotalSeconds;
-        var activeHours = Math.Max(activeSeconds / 3600.0, 0.001);
+        var activeSeconds = snapshot.ActiveTrackingSeconds + (long)aggregator.PendingActiveDuration.TotalSeconds;
 
         StatusText.Text = aggregator.TrackingEnabled ? "Tracking enabled" : "Paused";
         TrackingToggleButton.Content = aggregator.TrackingEnabled ? "Pause tracking" : "Enable tracking";
         ActiveTimeText.Text = FormatDuration(TimeSpan.FromSeconds(activeSeconds));
-        SessionText.Text = FormatDuration(aggregator.CurrentSessionDuration);
+        SessionText.Text = FormatDuration(sessionClock.Elapsed);
+        SessionCountText.Text = snapshot.AppLaunches.ToString("N0");
         KeyTotalText.Text = keyTotal.ToString("N0");
         MouseTotalText.Text = mouseTotal.ToString("N0");
-        LeftClickText.Text = GetCounter("Mouse.Left").ToString("N0");
-        RightClickText.Text = GetCounter("Mouse.Right").ToString("N0");
-        KeysPerHourText.Text = (keyTotal / activeHours).ToString("N0");
-        TopKeyCountText.Text = $"{keys.Count:N0} tracked";
-        TopKeysList.ItemsSource = keys.Take(8).Select(item => $"{item.Key.Replace("Key.", "")}: {item.Value:N0}");
-        RefreshAllInputsList();
+        MaybeAutoSave();
+        if (MainTabs?.SelectedIndex == 1)
+        {
+            RefreshAllInputsList();
+        }
     }
 
-    private long GetCounter(string name) => aggregator.Snapshot.Counters.GetValueOrDefault(name);
+    private void MaybeAutoSave()
+    {
+        if (!aggregator.HasUnsavedChanges || DateTime.UtcNow - lastAutoSaveUtc < TimeSpan.FromSeconds(15))
+        {
+            return;
+        }
+
+        aggregator.Persist();
+        lastAutoSaveUtc = DateTime.UtcNow;
+    }
 
     private static string FormatDuration(TimeSpan duration)
     {
@@ -236,7 +244,7 @@ public partial class MainWindow : Window
     {
         foreach (var item in LanguageComboBox.Items.OfType<System.Windows.Controls.ComboBoxItem>())
         {
-            if (string.Equals(item.Tag?.ToString(), language, StringComparison.OrdinalIgnoreCase))
+            if (item.IsEnabled && string.Equals(item.Tag?.ToString(), language, StringComparison.OrdinalIgnoreCase))
             {
                 LanguageComboBox.SelectedItem = item;
                 return;
@@ -262,6 +270,14 @@ public partial class MainWindow : Window
         RefreshAllInputsList();
     }
 
+    private void MainTabs_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (MainTabs?.SelectedIndex == 1)
+        {
+            RefreshAllInputsList();
+        }
+    }
+
     private void RefreshAllInputsList()
     {
         if (AllInputsList is null || InputSortComboBox is null)
@@ -269,9 +285,10 @@ public partial class MainWindow : Window
             return;
         }
 
+        var counters = aggregator.GetCountersSnapshot();
         var rows = KnownKeyboardInputs
-            .Select(name => new InputUsageRow(name, "Keyboard", GetCounter($"Key.{name}")))
-            .Concat(KnownMouseInputs.Select(name => new InputUsageRow(name, "Mouse", GetCounter($"Mouse.{name}"))))
+            .Select(name => new InputUsageRow(name, "Keyboard", counters.GetValueOrDefault($"Key.{name}")))
+            .Concat(KnownMouseInputs.Select(name => new InputUsageRow(name, "Mouse", counters.GetValueOrDefault($"Mouse.{name}"))))
             .ToList();
 
         var sort = (InputSortComboBox.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Tag?.ToString() ?? "desc";
