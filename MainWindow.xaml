@@ -77,10 +77,10 @@
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
         <Style TargetType="TabItem">
-            <Setter Property="Width" Value="118"/>
-            <Setter Property="Height" Value="42"/>
-            <Setter Property="Padding" Value="16,0"/>
-            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="MinWidth" Value="96"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{DynamicResource Ink}"/>
             <Setter Property="Background" Value="{DynamicResource PanelAlt}"/>
@@ -88,7 +88,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
-                        <Border x:Name="TabBorder" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}"
+                        <Border x:Name="TabBorder" Height="{TemplateBinding Height}" MinWidth="{TemplateBinding MinWidth}"
                                 Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="1" CornerRadius="8" Padding="{TemplateBinding Padding}">
                             <ContentPresenter x:Name="ContentSite" ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -133,8 +133,8 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Horizontal">
-                    <Border Width="58" Height="58" CornerRadius="8" Margin="0,0,16,0" Background="{DynamicResource Panel}">
-                        <Image Source="Assets/keywise-logo-source.png" Stretch="UniformToFill"/>
+                    <Border Width="64" Height="64" CornerRadius="8" Margin="0,0,16,0" Background="{DynamicResource Panel}" ClipToBounds="True">
+                        <Image Source="pack://application:,,,/Assets/keywise-logo-source.png" Stretch="UniformToFill"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="Keywise" Foreground="White" FontSize="30" FontWeight="SemiBold"/>
