@@ -211,6 +211,41 @@ public partial class MainWindow : Window
         RefreshDashboard();
     }
 
+    private void Window_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+    {
+        if (e.OriginalSource is not DependencyObject source)
+        {
+            return;
+        }
+
+        var scrollViewer = FindVisualParent<System.Windows.Controls.ScrollViewer>(source);
+        if (scrollViewer is null)
+        {
+            return;
+        }
+
+        var targetOffset = Math.Clamp(scrollViewer.VerticalOffset - e.Delta, 0, scrollViewer.ScrollableHeight);
+        scrollViewer.ScrollToVerticalOffset(targetOffset);
+        e.Handled = true;
+    }
+
+    private static T? FindVisualParent<T>(DependencyObject source)
+        where T : DependencyObject
+    {
+        var current = source;
+        while (current is not null)
+        {
+            if (current is T match)
+            {
+                return match;
+            }
+
+            current = Media.VisualTreeHelper.GetParent(current);
+        }
+
+        return null;
+    }
+
     private void SimulateA_Click(object sender, RoutedEventArgs e)
     {
         aggregator.Increment(InputBucket.Key("A"));
