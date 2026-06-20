@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Drawing = System.Drawing;
 using Forms = System.Windows.Forms;
+using Media = System.Windows.Media;
 
 namespace DesktopUsageAnalytics;
 
@@ -26,6 +27,16 @@ public partial class MainWindow : Window
 
     private static readonly string[] KnownMouseInputs = ["Left", "Right", "Middle"];
 
+    private static readonly HeatmapKeySpec[][] KeyboardHeatmapLayout =
+    [
+        [new("Escape", "Esc", 58), new("F1", "F1"), new("F2", "F2"), new("F3", "F3"), new("F4", "F4"), new("F5", "F5"), new("F6", "F6"), new("F7", "F7"), new("F8", "F8"), new("F9", "F9"), new("F10", "F10"), new("F11", "F11"), new("F12", "F12")],
+        [new("Oem3", "`"), new("D1", "1"), new("D2", "2"), new("D3", "3"), new("D4", "4"), new("D5", "5"), new("D6", "6"), new("D7", "7"), new("D8", "8"), new("D9", "9"), new("D0", "0"), new("OemMinus", "-"), new("OemPlus", "="), new("Back", "Back", 86)],
+        [new("Tab", "Tab", 76), new("Q", "Q"), new("W", "W"), new("E", "E"), new("R", "R"), new("T", "T"), new("Y", "Y"), new("U", "U"), new("I", "I"), new("O", "O"), new("P", "P"), new("OemOpenBrackets", "["), new("Oem6", "]"), new("Oem5", "\\", 70)],
+        [new("Capital", "Caps", 90), new("A", "A"), new("S", "S"), new("D", "D"), new("F", "F"), new("G", "G"), new("H", "H"), new("J", "J"), new("K", "K"), new("L", "L"), new("Oem1", ";"), new("Oem7", "'"), new("Return", "Enter", 104)],
+        [new("LeftShift", "Shift", 112), new("Z", "Z"), new("X", "X"), new("C", "C"), new("V", "V"), new("B", "B"), new("N", "N"), new("M", "M"), new("OemComma", ","), new("OemPeriod", "."), new("Oem2", "/"), new("RightShift", "Shift", 126)],
+        [new("LeftCtrl", "Ctrl", 76), new("LWin", "Win", 66), new("LeftAlt", "Alt", 66), new("Space", "Space", 330), new("RightAlt", "Alt", 66), new("Apps", "Menu", 76), new("RightCtrl", "Ctrl", 76)]
+    ];
+
     private readonly UsageStore store = new();
     private readonly UsageAggregator aggregator;
     private readonly StartupManager startupManager = new();
@@ -35,6 +46,12 @@ public partial class MainWindow : Window
     private readonly WindowsInputMonitor inputMonitor;
     private DateTime lastAutoSaveUtc = DateTime.UtcNow;
     private bool isExiting;
+
+    private sealed record HeatmapKeySpec(string CounterName, string Label, double Width = 54);
+
+    private sealed record HeatmapRow(IReadOnlyList<HeatmapKey> Keys);
+
+    private sealed record HeatmapKey(string Label, string CountText, double Width, Media.Brush Background, Media.Brush Foreground);
 
     public MainWindow()
     {
@@ -49,6 +66,7 @@ public partial class MainWindow : Window
 
         DataPathText.Text = store.DataPath;
         StartAtLoginCheckBox.IsChecked = startupManager.IsEnabled;
+        StartMinimizedCheckBox.IsChecked = aggregator.Snapshot.StartMinimized;
         MinimizeToTrayCheckBox.IsChecked = aggregator.Snapshot.MinimizeToTrayOnClose;
         SelectLanguage(aggregator.Snapshot.Language);
         InputSortComboBox.SelectedIndex = 0;
@@ -69,7 +87,17 @@ public partial class MainWindow : Window
         StartInputMonitor();
         RefreshDashboard();
         UpdateNavButtons();
+
+        if (ShouldStartMinimized())
+        {
+            Loaded += (_, _) => Hide();
+        }
     }
+
+    private static bool ShouldStartMinimized() =>
+        Environment.GetCommandLineArgs().Any(arg =>
+            string.Equals(arg, "--minimized", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(arg, "/minimized", StringComparison.OrdinalIgnoreCase));
 
     private static Drawing.Icon LoadTrayIcon()
     {
@@ -147,6 +175,10 @@ public partial class MainWindow : Window
         MouseTotalText.Text = mouseTotal.ToString("N0");
         MaybeAutoSave();
         if (MainTabs?.SelectedIndex == 1)
+        {
+            RefreshHeatmap();
+        }
+        else if (MainTabs?.SelectedIndex == 2)
         {
             RefreshAllInputsList();
         }
@@ -230,10 +262,21 @@ public partial class MainWindow : Window
     private void StartAtLoginCheckBox_Changed(object sender, RoutedEventArgs e)
     {
         var enabled = StartAtLoginCheckBox.IsChecked == true;
-        startupManager.SetEnabled(enabled);
+        startupManager.SetEnabled(enabled, aggregator.Snapshot.StartMinimized);
         aggregator.Snapshot.StartAtLogin = startupManager.IsEnabled;
         aggregator.Persist();
         StartAtLoginCheckBox.IsChecked = startupManager.IsEnabled;
+    }
+
+    private void StartMinimizedCheckBox_Changed(object sender, RoutedEventArgs e)
+    {
+        aggregator.Snapshot.StartMinimized = StartMinimizedCheckBox.IsChecked == true;
+        if (startupManager.IsEnabled)
+        {
+            startupManager.SetEnabled(true, aggregator.Snapshot.StartMinimized);
+        }
+
+        aggregator.Persist();
     }
 
     private void MinimizeToTrayCheckBox_Changed(object sender, RoutedEventArgs e)
@@ -282,17 +325,23 @@ public partial class MainWindow : Window
         UpdateNavButtons();
         if (MainTabs?.SelectedIndex == 1)
         {
+            RefreshHeatmap();
+        }
+        else if (MainTabs?.SelectedIndex == 2)
+        {
             RefreshAllInputsList();
         }
     }
 
     private void DashboardNavButton_Click(object sender, RoutedEventArgs e) => SelectTab(0);
 
-    private void InputsNavButton_Click(object sender, RoutedEventArgs e) => SelectTab(1);
+    private void HeatmapNavButton_Click(object sender, RoutedEventArgs e) => SelectTab(1);
 
-    private void PrivacyNavButton_Click(object sender, RoutedEventArgs e) => SelectTab(2);
+    private void InputsNavButton_Click(object sender, RoutedEventArgs e) => SelectTab(2);
 
-    private void SettingsNavButton_Click(object sender, RoutedEventArgs e) => SelectTab(3);
+    private void PrivacyNavButton_Click(object sender, RoutedEventArgs e) => SelectTab(3);
+
+    private void SettingsNavButton_Click(object sender, RoutedEventArgs e) => SelectTab(4);
 
     private void SelectTab(int index)
     {
@@ -308,9 +357,10 @@ public partial class MainWindow : Window
         }
 
         SetNavButtonState(DashboardNavButton, MainTabs.SelectedIndex == 0);
-        SetNavButtonState(InputsNavButton, MainTabs.SelectedIndex == 1);
-        SetNavButtonState(PrivacyNavButton, MainTabs.SelectedIndex == 2);
-        SetNavButtonState(SettingsNavButton, MainTabs.SelectedIndex == 3);
+        SetNavButtonState(HeatmapNavButton, MainTabs.SelectedIndex == 1);
+        SetNavButtonState(InputsNavButton, MainTabs.SelectedIndex == 2);
+        SetNavButtonState(PrivacyNavButton, MainTabs.SelectedIndex == 3);
+        SetNavButtonState(SettingsNavButton, MainTabs.SelectedIndex == 4);
     }
 
     private void SetNavButtonState(System.Windows.Controls.Button button, bool selected)
@@ -320,8 +370,68 @@ public partial class MainWindow : Window
         button.Foreground = GetBrush(selected ? "AccentInk" : "ButtonFg");
     }
 
-    private System.Windows.Media.Brush GetBrush(string resourceName) =>
-        Resources[resourceName] as System.Windows.Media.Brush ?? System.Windows.Media.Brushes.Transparent;
+    private Media.Brush GetBrush(string resourceName) =>
+        Resources[resourceName] as Media.Brush ?? Media.Brushes.Transparent;
+
+    private void RefreshHeatmap()
+    {
+        if (KeyboardHeatmapRows is null)
+        {
+            return;
+        }
+
+        var counters = aggregator.GetCountersSnapshot();
+        var highestCount = KeyboardHeatmapLayout
+            .SelectMany(row => row)
+            .Select(spec => counters.GetValueOrDefault($"Key.{spec.CounterName}"))
+            .DefaultIfEmpty(0)
+            .Max();
+
+        var rows = KeyboardHeatmapLayout
+            .Select(row => new HeatmapRow(row
+                .Select(spec =>
+                {
+                    var count = counters.GetValueOrDefault($"Key.{spec.CounterName}");
+                    var ratio = highestCount <= 0 ? 0 : (double)count / highestCount;
+                    return new HeatmapKey(
+                        spec.Label,
+                        count > 0 ? count.ToString("N0") : string.Empty,
+                        spec.Width,
+                        BuildHeatBrush(ratio),
+                        GetBrush(ratio > 0.62 ? "AccentInk" : "Ink"));
+                })
+                .ToList()))
+            .ToList();
+
+        KeyboardHeatmapRows.ItemsSource = rows;
+        HeatmapSummaryText.Text = highestCount > 0
+            ? $"Darker keys are used more. Highest key count: {highestCount:N0}."
+            : "No keyboard data yet. The heatmap fills in as aggregate key counts are collected.";
+    }
+
+    private Media.Brush BuildHeatBrush(double ratio)
+    {
+        if (ratio <= 0)
+        {
+            return GetBrush("PanelAlt");
+        }
+
+        var low = GetResourceColor("AccentSoft", Media.Color.FromRgb(28, 77, 74));
+        var high = GetResourceColor("Accent", Media.Color.FromRgb(61, 210, 198));
+        var mixed = LerpColor(low, high, Math.Pow(Math.Clamp(ratio, 0, 1), 0.72));
+        var brush = new Media.SolidColorBrush(mixed);
+        brush.Freeze();
+        return brush;
+    }
+
+    private Media.Color GetResourceColor(string resourceName, Media.Color fallback) =>
+        Resources[resourceName] is Media.SolidColorBrush brush ? brush.Color : fallback;
+
+    private static Media.Color LerpColor(Media.Color low, Media.Color high, double amount) =>
+        Media.Color.FromRgb(
+            (byte)(low.R + (high.R - low.R) * amount),
+            (byte)(low.G + (high.G - low.G) * amount),
+            (byte)(low.B + (high.B - low.B) * amount));
 
     private void RefreshAllInputsList()
     {

@@ -216,6 +216,7 @@
 
             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,10,0,16" HorizontalAlignment="Left">
                 <Button x:Name="DashboardNavButton" Style="{StaticResource NavButton}" Content="Dashboard" Click="DashboardNavButton_Click"/>
+                <Button x:Name="HeatmapNavButton" Style="{StaticResource NavButton}" Content="Heatmap" Click="HeatmapNavButton_Click"/>
                 <Button x:Name="InputsNavButton" Style="{StaticResource NavButton}" Content="Inputs" Click="InputsNavButton_Click"/>
                 <Button x:Name="PrivacyNavButton" Style="{StaticResource NavButton}" Content="Privacy" Click="PrivacyNavButton_Click"/>
                 <Button x:Name="SettingsNavButton" Style="{StaticResource NavButton}" Content="Settings" Click="SettingsNavButton_Click"/>
@@ -269,6 +270,66 @@
                                     </StackPanel>
                                 </Border>
                             </UniformGrid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <TabItem Header="Heatmap">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
+                        <StackPanel Margin="0,0,0,20">
+                            <Grid Margin="0,0,0,14">
+                                <StackPanel>
+                                    <TextBlock Text="Keyboard Heatmap" FontSize="22" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Aggregate key totals shown as a privacy-safe keyboard map" Foreground="{DynamicResource Muted}" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <Border Style="{StaticResource PanelCard}">
+                                <StackPanel>
+                                    <ItemsControl x:Name="KeyboardHeatmapRows">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <ItemsControl ItemsSource="{Binding Keys}" Margin="0,0,0,8">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Orientation="Horizontal"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Width="{Binding Width}" Height="52"
+                                                                    Background="{Binding Background}"
+                                                                    BorderBrush="{DynamicResource Line}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="6"
+                                                                    Padding="6"
+                                                                    Margin="0,0,8,0">
+                                                                <Grid>
+                                                                    <TextBlock Text="{Binding Label}"
+                                                                               Foreground="{Binding Foreground}"
+                                                                               FontWeight="SemiBold"
+                                                                               FontSize="13"
+                                                                               HorizontalAlignment="Center"
+                                                                               VerticalAlignment="Top"
+                                                                               TextTrimming="CharacterEllipsis"/>
+                                                                    <TextBlock Text="{Binding CountText}"
+                                                                               Foreground="{Binding Foreground}"
+                                                                               Opacity="0.85"
+                                                                               FontSize="11"
+                                                                               HorizontalAlignment="Center"
+                                                                               VerticalAlignment="Bottom"
+                                                                               TextTrimming="CharacterEllipsis"/>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock x:Name="HeatmapSummaryText" Foreground="{DynamicResource Muted}" Margin="0,10,0,0" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>
@@ -344,8 +405,12 @@
                         <Border Style="{StaticResource PanelCard}">
                             <StackPanel>
                                 <TextBlock Text="Startup" FontSize="18" FontWeight="SemiBold"/>
-                                <CheckBox x:Name="StartAtLoginCheckBox" Content="Start Keywise when I sign in" Margin="0,12,0,6"
-                                          Foreground="{DynamicResource Ink}" Checked="StartAtLoginCheckBox_Changed" Unchecked="StartAtLoginCheckBox_Changed"/>
+                                <WrapPanel Margin="0,12,0,6">
+                                    <CheckBox x:Name="StartAtLoginCheckBox" Content="Start Keywise when I sign in" Margin="0,0,24,6"
+                                              Foreground="{DynamicResource Ink}" Checked="StartAtLoginCheckBox_Changed" Unchecked="StartAtLoginCheckBox_Changed"/>
+                                    <CheckBox x:Name="StartMinimizedCheckBox" Content="Start minimized" Margin="0,0,0,6"
+                                              Foreground="{DynamicResource Ink}" Checked="StartMinimizedCheckBox_Changed" Unchecked="StartMinimizedCheckBox_Changed"/>
+                                </WrapPanel>
                                 <TextBlock Text="Disabled by default. When enabled, Keywise creates a visible Startup folder shortcut that you can remove at any time."
                                            Foreground="{DynamicResource Muted}" TextWrapping="Wrap"/>
                             </StackPanel>

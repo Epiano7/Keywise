@@ -11,11 +11,11 @@ public sealed class StartupManager
 
     public bool IsEnabled => File.Exists(ShortcutPath);
 
-    public void SetEnabled(bool enabled)
+    public void SetEnabled(bool enabled, bool startMinimized)
     {
         if (enabled)
         {
-            CreateShortcut();
+            CreateShortcut(startMinimized);
         }
         else if (File.Exists(ShortcutPath))
         {
@@ -23,7 +23,7 @@ public sealed class StartupManager
         }
     }
 
-    private void CreateShortcut()
+    private void CreateShortcut(bool startMinimized)
     {
         var targetPath = Environment.ProcessPath;
         if (string.IsNullOrWhiteSpace(targetPath))
@@ -46,8 +46,10 @@ public sealed class StartupManager
             shortcut = shellType.InvokeMember("CreateShortcut", System.Reflection.BindingFlags.InvokeMethod, null, shell, [ShortcutPath]);
             var shortcutType = shortcut!.GetType();
             shortcutType.InvokeMember("TargetPath", System.Reflection.BindingFlags.SetProperty, null, shortcut, [targetPath]);
+            shortcutType.InvokeMember("Arguments", System.Reflection.BindingFlags.SetProperty, null, shortcut, [startMinimized ? "--minimized" : string.Empty]);
             shortcutType.InvokeMember("WorkingDirectory", System.Reflection.BindingFlags.SetProperty, null, shortcut, [Path.GetDirectoryName(targetPath)]);
             shortcutType.InvokeMember("Description", System.Reflection.BindingFlags.SetProperty, null, shortcut, ["Keywise"]);
+            shortcutType.InvokeMember("WindowStyle", System.Reflection.BindingFlags.SetProperty, null, shortcut, [startMinimized ? 7 : 1]);
             shortcutType.InvokeMember("Save", System.Reflection.BindingFlags.InvokeMethod, null, shortcut, []);
         }
         finally
