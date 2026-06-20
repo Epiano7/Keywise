@@ -8,7 +8,8 @@
         Icon="Assets/keywise.ico"
         ShowInTaskbar="True"
         FontFamily="Segoe UI"
-        Background="{DynamicResource AppBackground}" Closing="Window_Closing">
+        Background="{DynamicResource AppBackground}" Closing="Window_Closing"
+        PreviewMouseWheel="Window_PreviewMouseWheel">
     <Window.Resources>
         <SolidColorBrush x:Key="AppBackground" Color="#EEF3F7"/>
         <SolidColorBrush x:Key="HeaderBackground" Color="#111827"/>
