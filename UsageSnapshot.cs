@@ -8,6 +8,8 @@ public sealed class UsageSnapshot
 
     public bool StartAtLogin { get; set; }
 
+    public bool StartMinimized { get; set; }
+
     public bool MinimizeToTrayOnClose { get; set; } = true;
 
     public string Language { get; set; } = "en-US";
