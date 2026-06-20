@@ -29,8 +29,8 @@
         <SolidColorBrush x:Key="WarningSoft" Color="#FFF8E1"/>
         <SolidColorBrush x:Key="WarningBorder" Color="#E8BE3E"/>
         <SolidColorBrush x:Key="WarningInk" Color="#4E3A00"/>
-        <SolidColorBrush x:Key="StatusBg" Color="#203149"/>
-        <SolidColorBrush x:Key="StatusBorder" Color="#3A516F"/>
+        <SolidColorBrush x:Key="StatusBg" Color="#173331"/>
+        <SolidColorBrush x:Key="StatusBorder" Color="#2A6963"/>
         <SolidColorBrush x:Key="TransparentBrush" Color="Transparent"/>
 
         <Style TargetType="Border" x:Key="MetricCard">
@@ -190,8 +190,9 @@
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Background="{DynamicResource StatusBg}" BorderBrush="{DynamicResource StatusBorder}" BorderThickness="1"
-                            CornerRadius="4" Height="44" MinWidth="150" Padding="18,0" Margin="0,0,10,8">
-                        <TextBlock x:Name="StatusText" Foreground="White" FontWeight="SemiBold" FontSize="14"
+                            CornerRadius="12" Height="28" MinWidth="104" Padding="12,0" Margin="0,0,12,8"
+                            VerticalAlignment="Center" Opacity="0.92">
+                        <TextBlock x:Name="StatusText" Foreground="#BDF7EF" FontWeight="SemiBold" FontSize="12"
                                    HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"/>
                     </Border>
                     <Button x:Name="TrackingToggleButton" Click="TrackingToggleButton_Click"/>
