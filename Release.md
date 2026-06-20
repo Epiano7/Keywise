@@ -14,7 +14,7 @@ Compress-Archive -Path artifacts\Keywise-win-x64\* -DestinationPath artifacts\Ke
 If Inno Setup 6 is installed locally, create the installer:
 
 ```powershell
-iscc installer\Keywise.iss /DAppVersion=0.2.2
+iscc installer\Keywise.iss /DAppVersion=0.2.3
 ```
 
 ## GitHub Release
@@ -24,8 +24,8 @@ iscc installer\Keywise.iss /DAppVersion=0.2.2
 3. Create a tag:
 
 ```powershell
-git tag v0.2.2
-git push origin v0.2.2
+git tag v0.2.3
+git push origin v0.2.3
 ```
 
 The release workflow builds:
