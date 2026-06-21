@@ -16,6 +16,7 @@ public sealed class UsageStore
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Keywise");
         DataPath = Path.Combine(DataDirectory, "usage.json");
+        BackupDataPath = Path.Combine(DataDirectory, "usage.previous.json");
         LegacyDataPaths =
         [
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Kounter", "usage.json"),
@@ -27,6 +28,8 @@ public sealed class UsageStore
 
     public string DataPath { get; }
 
+    private string BackupDataPath { get; }
+
     private string[] LegacyDataPaths { get; }
 
     private List<string> LoadedLegacyPaths { get; } = [];
@@ -35,16 +38,27 @@ public sealed class UsageStore
     {
         var snapshots = new List<UsageSnapshot>();
         LoadedLegacyPaths.Clear();
-        foreach (var path in new[] { DataPath }.Concat(LegacyDataPaths))
+        var primarySnapshot = TryLoad(DataPath, out var primaryLoadFailed);
+        if (primarySnapshot is not null)
         {
-            var snapshot = TryLoad(path);
+            snapshots.Add(primarySnapshot);
+        }
+        else if (primaryLoadFailed)
+        {
+            var backupSnapshot = TryLoad(BackupDataPath, out _);
+            if (backupSnapshot is not null)
+            {
+                snapshots.Add(backupSnapshot);
+            }
+        }
+
+        foreach (var path in LegacyDataPaths)
+        {
+            var snapshot = TryLoad(path, out _);
             if (snapshot is not null)
             {
                 snapshots.Add(snapshot);
-                if (!string.Equals(path, DataPath, StringComparison.OrdinalIgnoreCase))
-                {
-                    LoadedLegacyPaths.Add(path);
-                }
+                LoadedLegacyPaths.Add(path);
             }
         }
 
@@ -60,7 +74,9 @@ public sealed class UsageStore
     {
         Directory.CreateDirectory(DataDirectory);
         var json = JsonSerializer.Serialize(snapshot, JsonOptions);
-        File.WriteAllText(DataPath, json);
+        var tempPath = Path.Combine(DataDirectory, $"usage-{Guid.NewGuid():N}.tmp");
+        File.WriteAllText(tempPath, json);
+        ReplaceDataFile(tempPath);
         ArchiveLoadedLegacyFiles();
     }
 
@@ -120,8 +136,9 @@ public sealed class UsageStore
         LoadedLegacyPaths.Clear();
     }
 
-    private static UsageSnapshot? TryLoad(string path)
+    private UsageSnapshot? TryLoad(string path, out bool loadFailed)
     {
+        loadFailed = false;
         if (!File.Exists(path))
         {
             return null;
@@ -134,8 +151,65 @@ public sealed class UsageStore
         }
         catch
         {
+            loadFailed = true;
+            QuarantineUnreadableFile(path);
             return null;
         }
+    }
+
+    private void ReplaceDataFile(string tempPath)
+    {
+        if (!File.Exists(DataPath))
+        {
+            File.Move(tempPath, DataPath);
+            return;
+        }
+
+        try
+        {
+            if (File.Exists(BackupDataPath))
+            {
+                File.Delete(BackupDataPath);
+            }
+
+            File.Replace(tempPath, DataPath, BackupDataPath, ignoreMetadataErrors: true);
+        }
+        catch
+        {
+            var fallbackBackupPath = CreateUniqueBackupPath("save-backups", "usage-before-save", ".json");
+            File.Copy(DataPath, fallbackBackupPath, overwrite: false);
+            File.Move(tempPath, DataPath, overwrite: true);
+        }
+    }
+
+    private void QuarantineUnreadableFile(string path)
+    {
+        try
+        {
+            Directory.CreateDirectory(DataDirectory);
+            var destination = CreateUniqueBackupPath("load-errors", $"{Path.GetFileNameWithoutExtension(path)}-unreadable", Path.GetExtension(path));
+            File.Move(path, destination);
+        }
+        catch
+        {
+            // If Windows refuses the move, leave the original file untouched for manual recovery.
+        }
+    }
+
+    private string CreateUniqueBackupPath(string folderName, string baseName, string extension)
+    {
+        var backupDirectory = Path.Combine(DataDirectory, folderName);
+        Directory.CreateDirectory(backupDirectory);
+        var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+        var destination = Path.Combine(backupDirectory, $"{baseName}-{timestamp}{extension}");
+        var counter = 1;
+        while (File.Exists(destination))
+        {
+            destination = Path.Combine(backupDirectory, $"{baseName}-{timestamp}-{counter}{extension}");
+            counter += 1;
+        }
+
+        return destination;
     }
 
     private static UsageSnapshot MergeSnapshots(List<UsageSnapshot> snapshots)
@@ -151,6 +225,7 @@ public sealed class UsageStore
             SchemaVersion = Math.Max(primary.SchemaVersion, current.SchemaVersion),
             TrackingEnabled = current.TrackingEnabled,
             StartAtLogin = current.StartAtLogin,
+            StartMinimized = current.StartMinimized,
             MinimizeToTrayOnClose = current.MinimizeToTrayOnClose,
             Language = string.IsNullOrWhiteSpace(current.Language) ? primary.Language : current.Language,
             ActiveTrackingSeconds = primary.ActiveTrackingSeconds,
