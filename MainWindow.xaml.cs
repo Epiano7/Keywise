@@ -173,6 +173,7 @@ public partial class MainWindow : Window
         SessionCountText.Text = snapshot.AppLaunches.ToString("N0");
         KeyTotalText.Text = keyTotal.ToString("N0");
         MouseTotalText.Text = mouseTotal.ToString("N0");
+        RefreshBackupHealth();
         MaybeAutoSave();
         if (MainTabs?.SelectedIndex == 1)
         {
@@ -273,7 +274,79 @@ public partial class MainWindow : Window
     private void SaveNow_Click(object sender, RoutedEventArgs e)
     {
         aggregator.Persist();
+        RefreshBackupHealth();
         System.Windows.MessageBox.Show("Aggregate counters saved locally.", "Keywise");
+    }
+
+    private void ExportBackup_Click(object sender, RoutedEventArgs e)
+    {
+        aggregator.Persist();
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = "Export Keywise backup",
+            Filter = "Keywise usage backup (*.json)|*.json",
+            FileName = $"keywise-backup-{DateTime.Now:yyyyMMdd-HHmmss}.json"
+        };
+
+        if (dialog.ShowDialog(this) != true)
+        {
+            return;
+        }
+
+        try
+        {
+            store.ExportTo(dialog.FileName);
+            RefreshBackupHealth();
+            System.Windows.MessageBox.Show("Backup exported.", "Keywise");
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show($"Backup export failed.\n\n{ex.Message}", "Keywise");
+        }
+    }
+
+    private void RestoreBackup_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "Restore Keywise backup",
+            Filter = "Keywise usage backup (*.json)|*.json"
+        };
+
+        if (dialog.ShowDialog(this) != true)
+        {
+            return;
+        }
+
+        if (System.Windows.MessageBox.Show("Restore this backup over the current Keywise totals?", "Restore backup", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        try
+        {
+            aggregator.RestoreFromFile(dialog.FileName);
+            StartAtLoginCheckBox.IsChecked = startupManager.IsEnabled;
+            StartMinimizedCheckBox.IsChecked = aggregator.Snapshot.StartMinimized;
+            MinimizeToTrayCheckBox.IsChecked = aggregator.Snapshot.MinimizeToTrayOnClose;
+            SelectLanguage(aggregator.Snapshot.Language);
+            RefreshDashboard();
+            System.Windows.MessageBox.Show("Backup restored.", "Keywise");
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show($"Backup restore failed.\n\n{ex.Message}", "Keywise");
+        }
+    }
+
+    private void OpenBackups_Click(object sender, RoutedEventArgs e)
+    {
+        System.IO.Directory.CreateDirectory(store.RotatingBackupDirectory);
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = store.RotatingBackupDirectory,
+            UseShellExecute = true
+        });
     }
 
     private void ResetCounts_Click(object sender, RoutedEventArgs e)
@@ -292,6 +365,21 @@ public partial class MainWindow : Window
             aggregator.DeleteLocalData();
             RefreshDashboard();
         }
+    }
+
+    private void RefreshBackupHealth()
+    {
+        if (BackupHealthText is null)
+        {
+            return;
+        }
+
+        var health = store.GetHealth();
+        var lastSave = health.LastSaveUtc is null ? "not saved this run" : $"{health.LastSaveUtc.Value.ToLocalTime():g}";
+        var newestBackup = health.NewestBackupUtc is null ? "none yet" : $"{health.NewestBackupUtc.Value.ToLocalTime():g}";
+        var warning = health.LoadErrorCount > 0 ? $" Load errors quarantined: {health.LoadErrorCount}." : string.Empty;
+        var recovery = string.IsNullOrWhiteSpace(health.LastLoadMessage) ? string.Empty : $" {health.LastLoadMessage}";
+        BackupHealthText.Text = $"Data health: last save {lastSave}; newest backup {newestBackup}; rotating backups {health.RotatingBackupCount}; daily backups {health.DailyBackupCount}.{warning}{recovery}";
     }
 
     private void StartAtLoginCheckBox_Changed(object sender, RoutedEventArgs e)

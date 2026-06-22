@@ -390,11 +390,15 @@
                                 <StackPanel>
                                     <TextBlock Text="Local Data" FontSize="18" FontWeight="SemiBold"/>
                                     <TextBox x:Name="DataPathText" IsReadOnly="True" Margin="0,12,0,12"/>
-                                    <StackPanel Orientation="Horizontal">
+                                    <TextBlock x:Name="BackupHealthText" Foreground="{DynamicResource Muted}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                                    <WrapPanel>
                                         <Button Content="Save now" Click="SaveNow_Click"/>
+                                        <Button Content="Export backup" Click="ExportBackup_Click"/>
+                                        <Button Content="Restore backup" Click="RestoreBackup_Click"/>
+                                        <Button Content="Open backups" Click="OpenBackups_Click"/>
                                         <Button Content="Reset counts" Click="ResetCounts_Click"/>
                                         <Button Content="Delete local data" Click="DeleteLocalData_Click"/>
-                                    </StackPanel>
+                                    </WrapPanel>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
