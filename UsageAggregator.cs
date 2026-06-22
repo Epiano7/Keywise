@@ -145,6 +145,17 @@ public sealed class UsageAggregator
         }
     }
 
+    public void RestoreFromFile(string path)
+    {
+        lock (syncRoot)
+        {
+            var restored = store.LoadFromFile(path);
+            CopySnapshot(restored, snapshot);
+            activeSinceUtc = snapshot.TrackingEnabled ? DateTime.UtcNow : null;
+            PersistCore();
+        }
+    }
+
     public void Persist()
     {
         lock (syncRoot)
@@ -197,5 +208,29 @@ public sealed class UsageAggregator
         {
             return activeSinceUtc is null ? TimeSpan.Zero : DateTime.UtcNow - activeSinceUtc.Value;
         }
+    }
+
+    private static void CopySnapshot(UsageSnapshot source, UsageSnapshot destination)
+    {
+        destination.SchemaVersion = source.SchemaVersion;
+        destination.TrackingEnabled = source.TrackingEnabled;
+        destination.StartAtLogin = source.StartAtLogin;
+        destination.StartMinimized = source.StartMinimized;
+        destination.MinimizeToTrayOnClose = source.MinimizeToTrayOnClose;
+        destination.Language = source.Language;
+        destination.ActiveTrackingSeconds = source.ActiveTrackingSeconds;
+        destination.AppLaunches = source.AppLaunches;
+        destination.PauseCount = source.PauseCount;
+        destination.Counters = new Dictionary<string, long>(source.Counters);
+        destination.Daily = source.Daily.ToDictionary(
+            item => item.Key,
+            item => new DailyUsageSnapshot
+            {
+                ActiveTrackingSeconds = item.Value.ActiveTrackingSeconds,
+                KeyPresses = item.Value.KeyPresses,
+                MouseLeft = item.Value.MouseLeft,
+                MouseRight = item.Value.MouseRight,
+                MouseMiddle = item.Value.MouseMiddle
+            });
     }
 }

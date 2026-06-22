@@ -5,6 +5,8 @@ namespace DesktopUsageAnalytics;
 
 public sealed class UsageStore
 {
+    private const int MaxRotatingBackups = 20;
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true
@@ -17,6 +19,8 @@ public sealed class UsageStore
             "Keywise");
         DataPath = Path.Combine(DataDirectory, "usage.json");
         BackupDataPath = Path.Combine(DataDirectory, "usage.previous.json");
+        RotatingBackupDirectory = Path.Combine(DataDirectory, "backups");
+        DailyBackupDirectory = Path.Combine(DataDirectory, "daily-backups");
         LegacyDataPaths =
         [
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Kounter", "usage.json"),
@@ -28,6 +32,14 @@ public sealed class UsageStore
 
     public string DataPath { get; }
 
+    public string RotatingBackupDirectory { get; }
+
+    public string DailyBackupDirectory { get; }
+
+    public string? LastLoadMessage { get; private set; }
+
+    public DateTime? LastSaveUtc { get; private set; }
+
     private string BackupDataPath { get; }
 
     private string[] LegacyDataPaths { get; }
@@ -38,23 +50,25 @@ public sealed class UsageStore
     {
         var snapshots = new List<UsageSnapshot>();
         LoadedLegacyPaths.Clear();
-        var primarySnapshot = TryLoad(DataPath, out var primaryLoadFailed);
+        LastLoadMessage = null;
+        var primarySnapshot = TryLoad(DataPath, out var primaryLoadFailed, quarantineOnError: true);
         if (primarySnapshot is not null)
         {
             snapshots.Add(primarySnapshot);
         }
         else if (primaryLoadFailed)
         {
-            var backupSnapshot = TryLoad(BackupDataPath, out _);
+            var backupSnapshot = TryLoad(BackupDataPath, out _, quarantineOnError: false);
             if (backupSnapshot is not null)
             {
                 snapshots.Add(backupSnapshot);
+                LastLoadMessage = "Recovered from usage.previous.json because usage.json could not be read.";
             }
         }
 
         foreach (var path in LegacyDataPaths)
         {
-            var snapshot = TryLoad(path, out _);
+            var snapshot = TryLoad(path, out _, quarantineOnError: false);
             if (snapshot is not null)
             {
                 snapshots.Add(snapshot);
@@ -77,7 +91,61 @@ public sealed class UsageStore
         var tempPath = Path.Combine(DataDirectory, $"usage-{Guid.NewGuid():N}.tmp");
         File.WriteAllText(tempPath, json);
         ReplaceDataFile(tempPath);
+        LastSaveUtc = DateTime.UtcNow;
         ArchiveLoadedLegacyFiles();
+        PruneRotatingBackups();
+    }
+
+    public UsageSnapshot LoadFromFile(string path)
+    {
+        var snapshot = TryLoad(path, out var loadFailed, quarantineOnError: false);
+        if (snapshot is null)
+        {
+            throw new InvalidDataException(loadFailed
+                ? "That file is not a readable Keywise usage backup."
+                : "That file does not exist.");
+        }
+
+        return snapshot;
+    }
+
+    public void ExportTo(string destinationPath)
+    {
+        if (!File.Exists(DataPath))
+        {
+            throw new FileNotFoundException("Keywise has not created a usage data file yet.", DataPath);
+        }
+
+        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+        File.Copy(DataPath, destinationPath, overwrite: true);
+    }
+
+    public UsageStoreHealth GetHealth()
+    {
+        var backupFiles = Directory.Exists(RotatingBackupDirectory)
+            ? Directory.GetFiles(RotatingBackupDirectory, "*.json")
+            : [];
+        var dailyFiles = Directory.Exists(DailyBackupDirectory)
+            ? Directory.GetFiles(DailyBackupDirectory, "*.json")
+            : [];
+        var errorFiles = Directory.Exists(Path.Combine(DataDirectory, "load-errors"))
+            ? Directory.GetFiles(Path.Combine(DataDirectory, "load-errors"), "*.json")
+            : [];
+
+        var allBackupFiles = backupFiles.Concat(dailyFiles).ToList();
+        var newestBackupUtc = allBackupFiles.Count == 0
+            ? (DateTime?)null
+            : allBackupFiles.Select(path => File.GetLastWriteTimeUtc(path)).Max();
+
+        return new UsageStoreHealth(
+            DataPath,
+            File.Exists(DataPath) ? new FileInfo(DataPath).Length : 0,
+            LastSaveUtc,
+            newestBackupUtc,
+            backupFiles.Length,
+            dailyFiles.Length,
+            errorFiles.Length,
+            LastLoadMessage);
     }
 
     public void Delete()
@@ -136,7 +204,7 @@ public sealed class UsageStore
         LoadedLegacyPaths.Clear();
     }
 
-    private UsageSnapshot? TryLoad(string path, out bool loadFailed)
+    private UsageSnapshot? TryLoad(string path, out bool loadFailed, bool quarantineOnError)
     {
         loadFailed = false;
         if (!File.Exists(path))
@@ -152,7 +220,11 @@ public sealed class UsageStore
         catch
         {
             loadFailed = true;
-            QuarantineUnreadableFile(path);
+            if (quarantineOnError)
+            {
+                QuarantineUnreadableFile(path);
+            }
+
             return null;
         }
     }
@@ -167,6 +239,8 @@ public sealed class UsageStore
 
         try
         {
+            CreateRotatingBackup();
+            CreateDailyBackup();
             if (File.Exists(BackupDataPath))
             {
                 File.Delete(BackupDataPath);
@@ -179,6 +253,57 @@ public sealed class UsageStore
             var fallbackBackupPath = CreateUniqueBackupPath("save-backups", "usage-before-save", ".json");
             File.Copy(DataPath, fallbackBackupPath, overwrite: false);
             File.Move(tempPath, DataPath, overwrite: true);
+        }
+    }
+
+    private void CreateRotatingBackup()
+    {
+        if (!File.Exists(DataPath))
+        {
+            return;
+        }
+
+        var destination = CreateUniqueBackupPath("backups", "usage", ".json");
+        File.Copy(DataPath, destination, overwrite: false);
+    }
+
+    private void CreateDailyBackup()
+    {
+        if (!File.Exists(DataPath))
+        {
+            return;
+        }
+
+        Directory.CreateDirectory(DailyBackupDirectory);
+        var destination = Path.Combine(DailyBackupDirectory, $"usage-{DateTime.Now:yyyy-MM-dd}.json");
+        if (!File.Exists(destination))
+        {
+            File.Copy(DataPath, destination, overwrite: false);
+        }
+    }
+
+    private void PruneRotatingBackups()
+    {
+        if (!Directory.Exists(RotatingBackupDirectory))
+        {
+            return;
+        }
+
+        var backups = Directory.GetFiles(RotatingBackupDirectory, "*.json")
+            .Select(path => new FileInfo(path))
+            .OrderByDescending(file => file.LastWriteTimeUtc)
+            .ToList();
+
+        foreach (var backup in backups.Skip(MaxRotatingBackups))
+        {
+            try
+            {
+                backup.Delete();
+            }
+            catch
+            {
+                // Backup pruning is best effort; never risk the active usage file for cleanup.
+            }
         }
     }
 
@@ -282,3 +407,13 @@ public sealed class UsageStore
         }
     }
 }
+
+public sealed record UsageStoreHealth(
+    string DataPath,
+    long DataFileBytes,
+    DateTime? LastSaveUtc,
+    DateTime? NewestBackupUtc,
+    int RotatingBackupCount,
+    int DailyBackupCount,
+    int LoadErrorCount,
+    string? LastLoadMessage);
